@@ -8,6 +8,7 @@ ipr: trust200902
 area: General
 workgroup: intarea
 keyword: Internet-Draft
+stream: independent
 
 stand_alone: yes
 smart_quotes: no
