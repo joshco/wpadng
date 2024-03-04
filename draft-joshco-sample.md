@@ -407,16 +407,15 @@ the client MUST, SHOULD, MAY, or MUST NOT implement them to be
 compliant. Client implementers are encouraged to implement as many
 mechanisms as possible, to promote maximum interoperability.
 
-+-------------------------+--------+----------+
-| Discovery               |        | Document |
-| Mechanism               | Status | Section  |
-+-------------------------+--------+----------+
+
+| Discovery Mechanism     | Status | Document |
+| -------------------     | ------ | -------- |
 | DHCP                    | MUST   | 4.4.1    |
 | SLP                     | SHOULD | 4.4.2    |
 | "Well Known Alias"      | MUST   | 4.4.3    |
 | DNS SRV Records         | SHOULD | 4.4.4    |
 | DNS TXT "service: URLs" | SHOULD | 4.4.5    |
-+-------------------------+--------+----------+
+
 
 SUMMARY OF DISCOVERY MECHANISMS
 
