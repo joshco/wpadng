@@ -28,6 +28,54 @@ informative:
 
 --- abstract
 
+This specification aims to modernize Web Proxy Automatic Discovery (WPAD)
+which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
+and Service Location Protocol were still evolving and/or not widely deployed.
+
+{{!WPAD=I-D.ietf-wrec-wpad-01}}
+
+Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
+approaches which, at the time of WPAD, were short-term solutions
+such as DNS A, DNS TXT.
+
+In their place, WPADNG incorporates modern technologies such as
+DNS Service Discovery {{!DNSSD=RFC6763}}
+
+At the time of WPAD, the configuration foramt used was a Javascript snippet
+which Web Browsers, or in more recent times, a system service executed to
+determine the relevant proxy server for a given URL.
+
+In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
+hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
+of the device itself.
+
+In that spirit, WPADNG will document how other, modern formats are used
+with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.
+
+
+WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
+and updating its sections based on feedback from the IETF community.
+
+This version of the specification makes the following changes:
+
+Deprecations/Removals
+
+* Deprecate DNS A record discovery aka "Well known aliases"
+* Deprecate DNS TXT record discovery
+* Deprecate SLP/SRV discoery
+* Remove the prohibition of DNSSRV fallback since DNS A is being deprecated
+* Remove Conditional Compliance section
+
+Additions
+* DNS-SD Discovery Mechanism
+* Content type negotation to support PVD
+
+Open Issues:
+* Should TGTDOM iteration aka "DNS devolution" remain ?
+
+The original introduction follows:
+
 A mechanism is needed to permit web clients to locate nearby web
 proxy caches. Current best practice is for end users to hand
 configure their web client (i.e., browser) with the URL of an "auto
@@ -409,13 +457,10 @@ compliant. Client implementers are encouraged to implement as many
 mechanisms as possible, to promote maximum interoperability.
 
 
-| Discovery Mechanism     | Status | Document |
-| -------------------     | ------ | -------- |
-| DHCP                    | MUST   | 4.4.1    |
-| SLP                     | SHOULD | 4.4.2    |
-| "Well Known Alias"      | MUST   | 4.4.3    |
-| DNS SRV Records         | SHOULD | 4.4.4    |
-| DNS TXT "service: URLs" | SHOULD | 4.4.5    |
+| Discovery Mechanism     | Status     |
+| -------------------     | ------     |
+| DHCP                    | MUST       |
+| DNS-SD                  | SHOULD     |
 
 
 SUMMARY OF DISCOVERY MECHANISMS
@@ -447,93 +492,69 @@ arbitrary size.
 An example STRING value would be:
 "http://server.domain/proxyconfig.pac"
 
+### DNS Serice Discovery (DNS-SD)
 
-###   Service Location Protocol /SLP
+Client implementations MUST support {{DNSSD}} discovery of
+proxy configuration files.  To suport this, a DNS server advertising
+WPADNG will have the following resource records:
 
-The Service Location Protocol RFC2608 is a Proposed Standard for
-discovering services in the Internet.  SLP has several reference
-implementations available; for details, check the following web
-page:
+SHOULD advertise PTR records which may return multiple advertised service instances
+or a single instance.
 
-        http://www.svrloc.org/
+MUST advertise TXT records conformant with {{DNSSD}}
 
-A service type for use with WPAD has been defined and is available
-as an Internet Draft.
+SHOULD advertise SRV records conformant with {{DNSSD}}
 
-Client implementations SHOULD implement SLP.   SLP Service Replies
-will provide one or more complete CURLs. Each candidate CURL so
-created should be pursued as specified in section 4.5 and beyond.
+### PTR Record Definition
 
-### DNS A/CNAME  "Well Known Aliases”
+For example purposes, we assume a client has attached to the
+enterprise network at Example Coporation, which uses the dommain `example.org`
 
-Client implementations MUST support this mechanism. This should be
-straightforward since only basic DNS lookup of A records is
-required. See RFC 2219 REF5 for a description of using "well known"
-DNS aliases for resource discovery. We propose the "well known
-alias” of "wpad" for web proxy auto-discovery.
+WPADNG PTR records should have the following naming scheme:
 
-The client performs the following DNS lookup:
-QNAME=wpad.TGTDOM., QCLASS=IN, QTYPE=A
+~~~
+_wpadng._tcp.example.org
+~~~
 
-Each A RR, which is returned, contains an IP address which is used
-to replace the HOST default in the CURL.
+When a client queries for the PTR record, the DNS server replies
+will contain zero, one or more responses.  These responses contain WPADNG
+instance names, and priorities.
 
-Each candidate CURL so created should be pursued as specified in
-section 4.5 and beyond.
+| Instance Name                       |
+| -------------                       |
+| primary._wpadng._tcp.example.org    |
+| secondary._wpadng._tcp.example.org  |
+| _wpadng._tcp.example.org            |
 
-###   DNS SRV Records
+In the above example. the enterprise advertises instance names for proxy servers
+  This allows an enterprise to provide redundancy and failover.
 
-Client implementations SHOULD support the DNS SRV mechanism. Details
-of the protocol can be found in RFC 2052 REF2. If the implementation
-language/environment provides the ability to perform DNS lookups on
-QTYPEs other than A, client implementers are strongly encouraged to
-provide this support. It is acknowledged that not all resolver APIs
-provide this functionality.
+### TXT Record Definition
 
-The client issues the following DNS lookup:
-QNAME=wpad.tcp.TGTDOM., QCLASS=IN, QTYPE=SRV
+WPADNG DNS TXT records MUST have the following format
 
-If it receives SRV RRs in response, the client should use each valid
-RR in the order specified in RFC 2052 REF2. Each valid record will
-specify both a HOST and a PORT to override the CURL defaults.
+~~~
+txtvers=1
+url=CURL
+~~~
 
-Each candidate CURL so created should be pursued as specified in
-section 4.5 and beyond.
+The CURL value is the URL to retrieve a Proxy Configuration FIle.
 
-###  DNS TXT service: Entries
+### SRV Record Definition
 
-Client implementation SHOULD support this mechanism.  If the
-implementation language/environment provides the ability to perform
-DNS lookups on QTYPEs other than A, the vendor is strongly
-encouraged to provide this support. It is acknowledged that not all
-resolver APIs provide this functionality.
-The client should attempt to retrieve TXT RRs from the DNS to obtain
-“service: URLs” contained therein. The “service: URL” will be of the
-following format, specifying a complete candidate CURL for each
-record located:
+WPADNG DNS SRV records MUST be formatted according to {{!DNSSRV=RFC2782}}.  If mulitple SRV records are returned in response to a query, the client should select a record according to the weight and priority rules laid out in the {{DNSSRV}} specification.
 
-service: wpad:http://HOST:PORT/PATH
+When using SRV records, only a HOST and PORT are returned.  As a result the client MUST follow the rules in Composing Candidate URL.  In practice, that means appending "/wpad.dat"
 
-The client should first issue the following DNS query:
-QNAME=wpad.TGTDOM., QCLASS=IN, QTYPE=TXT
+### DNSSD Client behavior
 
-It should process each TXT RR it receives (if any) using each
-service:URL found (if any) to generate a candidate CURL. These CURLs
-should be pursued as described in section 3.5 and beyond.
-Readers familiar with REF1 should note that WPAD clients MUST NOT
-perform the QNAME=TGTDOM., QCLASS=IN, QTYPE=TXT lookup which would
-be suggested by that document.
+When attempting to discover web proxy servers via {{DNSSD}}, the following sequence should be used:
 
-###  Fallback
+1. Query PTR records
+2. Query TXT and SRV records
+3. Compose Candidate URL
+4. Retreive configuration file
 
-Clients MUST NOT implement the "Fallback" mechanism described in
-REF1. It is unlikely that a client will find a web server prepared to
-handle the CURL request at a random suffix of its FQDN.  This will
-only increase the number of DNS probes and introduce an excess of
-spurious "GET" requests on those hapless web servers.
-
-Instead, the "Well Known Aliases” method of section 3.4.4 provides
-equivalent functionality.
 
 ### Timeouts
 
@@ -556,12 +577,33 @@ mechanism.
 ## Retrieving the CFILE at the CURL
 
 The client then requests the CURL via HTTP.
-When making the request it MUST transmit HTTP "Accept" headers
-indicating what CFILE formats it is capable of accepting. For
-example, Netscape Navigator browsers with versions 2.0 and beyond
-might include the following line in the HTTP Request:
 
-Accept: application/x-ns-proxy-autoconfig
+### Content Negotation for PVD
+
+When making the request it MUST transmit HTTP "Accept" headers
+indicating what CFILE formats it is capable of accepting.
+
+For PVD, the Accept header value is `application/pvd_json`
+
+For existing WPAD clients, the most commonly used format is Netscape's
+Proxy Auto Config (PAC) file, the value is 'application/x-ns-proxy-autoconfig'
+
+Clients that support PVD can use content negotiation to prefer PVD,
+while accepting PAC as a fallback.
+
+~~~
+:method = GET
+:authority = HOST
+:path = PATH
+accept = application/pvd+json
+accept = application/x-ns-proxy-autoconfig
+~~~
+
+Clients that do not support PVD will continue to use PAC, and not include
+PVD in the accept header.
+
+When receiving a GET at the CURL, a proxy server can decide wether to return
+PVD or PAC, providing backward compatibility as well as an upgrade path.
 
 The client MUST follow HTTP redirect directives (response codes 3xx)
 returned by the server. The client SHOULD send a valid "User-Agent"
@@ -674,74 +716,10 @@ deployed vendor hardware and software. The hope is that enough
 flexibility is provided in this framework that administrators can
 select which mechanisms will work in their environments.
 
-# Conditional Compliance
-
-In light of the fact that many of the discovery technologies
-described in this document are not well deployed or not available on
-all platforms, this specification permits conditional compliance.
-Conditional compliance is designated by three class identifications.
-
-Additionally, due to the possible security implications of a DHCP
-broadcast request, it is onerous to REQUIRE an implementer to put
-himself or his implementation at undue risk.  It is quite common to
-have rogue DHCP servers on a network which may fool a DHCP broadcast
-implementation into using a malicious configuration file.  On
-platforms which do not support DHCP natively and cannot get the WPAD
-option along with its IP address, and which cannot support the DHCP
-INFORM unicast request, presumably to a known and trusted DHCP
-server, the likelihood of an undetected spoofing attack is
-increased.  Having an individual program, such as a browser, trying
-to detect a DHCP server on a network is unreasonable, in the
-authors' opinion.  On platforms which use DHCP for their system IP
-address and have previously trusted a DHCP server, a unicast DHCP
-INFORM to that same trusted server does not introduce any additional
-trust to that server.
-
-
-## Class 0 - Minimally compliant
-
-   A WPAD implementation which implements only the following discovery
-   mechanisms and interval schemes is considered class 0 compliant:
-
-   DNS A record queries
-   Browser or System session refresh intervals
-
-   Class 0 compliance is only applicable to systems or implementations
-   which do not natively support DHCP and or cannot securely determine
-   a trusted local DHCP server.
-
-## Class 1 - Compliant
-
-   A WPAD implementation which implements only the following discovery
-   mechanisms and interval schemes is considered class 1 compliant:
-
-   DNS A record queries
-   DHCP INFORM Queries
-
-   Network stack change refresh intervals
-   CFILE expiration refresh intervals
-
-## Class 2 - Maximally compliant
-
-   A WPAD implementation which implements only the following discovery
-   mechanisms and interval schemes is considered class 1 compliant:
-
-   DNS A record queries
-   DHCP INFORM Queries
-   DNS TXT service: queries
-   DNS SRV RR queries
-   SVRLOC Queries
-   Network stack change refresh intervals
-   CFILE expiration refresh intervals
-
-   To be considered compliant with a given class, an implementation
-   MUST support the features listed above corresponding to that class.
-
 
 # Conventions and Definitions
 
 {::boilerplate bcp14-tagged}
-
 
 # Security Considerations
 
@@ -761,8 +739,6 @@ security weaknesses.
 # IANA Considerations
 
 This document has no IANA actions.
-
-
 
 --- back
 
@@ -802,7 +778,7 @@ proxy.
 In addition, the authors are grateful for the feedback provided by
 the following people:
 
-    Jeremy Worley - RealNetworks
-    Eric Twitchell - United Parcel Service
+* Jeremy Worley - RealNetworks
+* Eric Twitchell - United Parcel Service
 
-the is the end
+end of draft
