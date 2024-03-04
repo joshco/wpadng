@@ -1664,16 +1664,53 @@ return FAILED;  /* could not locate valid CFILE */
 the client <span class="bcp14">MUST</span>, <span class="bcp14">SHOULD</span>, <span class="bcp14">MAY</span>, or <span class="bcp14">MUST NOT</span> implement them to be
 compliant. Client implementers are encouraged to implement as many
 mechanisms as possible, to promote maximum interoperability.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
-<p id="section-3.4-2">+-------------------------+--------+----------+
-| Discovery               |        | Document |
-| Mechanism               | Status | Section  |
-+-------------------------+--------+----------+
-| DHCP                    | <span class="bcp14">MUST</span>   | 4.4.1    |
-| SLP                     | <span class="bcp14">SHOULD</span> | 4.4.2    |
-| "Well Known Alias"      | <span class="bcp14">MUST</span>   | 4.4.3    |
-| DNS SRV Records         | <span class="bcp14">SHOULD</span> | 4.4.4    |
-| DNS TXT "service: URLs" | <span class="bcp14">SHOULD</span> | 4.4.5    |
-+-------------------------+--------+----------+<a href="#section-3.4-2" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Discovery Mechanism</th>
+              <th class="text-left" rowspan="1" colspan="1">Status</th>
+              <th class="text-left" rowspan="1" colspan="1">Document</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DHCP</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">MUST</span>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">4.4.1</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">SLP</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">SHOULD</span>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">4.4.2</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">"Well Known Alias"</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">MUST</span>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">4.4.3</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DNS SRV Records</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">SHOULD</span>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">4.4.4</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DNS TXT "service: URLs"</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">SHOULD</span>
+</td>
+              <td class="text-left" rowspan="1" colspan="1">4.4.5</td>
+            </tr>
+          </tbody>
+        </table>
 <p id="section-3.4-3">SUMMARY OF DISCOVERY MECHANISMS<a href="#section-3.4-3" class="pilcrow">¶</a></p>
 <div id="dhcp">
 <section id="section-3.4.1">
