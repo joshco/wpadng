@@ -1,7 +1,7 @@
 ---
 title: "Sample"
 abbrev: "wpadng"
-docname: draft-joshco-wpadng-latest
+docname: draft-joshco-sample-latest
 category: info
 
 ipr: trust200902
