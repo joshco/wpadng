@@ -53,7 +53,7 @@ Abstract
 
    *  Deprecate DNS TXT record discovery
 
-   *  Deprecate SLP/SRV discoery
+   *  Deprecate SLP/SRV discovery
 
    *  Remove the prohibition of DNSSRV fallback since DNS A is being
       deprecated
