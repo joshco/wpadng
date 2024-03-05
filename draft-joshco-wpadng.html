@@ -4,14 +4,13 @@
 <meta charset="utf-8">
 <meta content="Common,Latin" name="scripts">
 <meta content="initial-scale=1.0" name="viewport">
-<title>Sample</title>
+<title>Web Proxy Auto Discovery Next Generation</title>
 <meta content="Josh Cohen" name="author">
 <meta content='
-       This specification aims to modernize Web Proxy Automatic Discovery (WPAD)
+       This specification aims to modernize Web Proxy Automatic Discovery ( )
 which was defined in 1997.  At that time, the World Wide Web was much
 earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
 and Service Location Protocol were still evolving and/or not widely deployed. 
-       
        Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
 approaches which, at the time of WPAD, were short-term solutions
 such as DNS A, DNS TXT. 
@@ -73,7 +72,7 @@ multiple web proxy servers.
     ' name="description">
 <meta content="xml2rfc 3.20.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
-<meta content="draft-joshco-sample" name="ietf.draft">
+<meta content="draft-joshco-wpadng-latest" name="ietf.draft">
 <!-- Generator version information:
   xml2rfc 3.20.0
     Python 3.11.6
@@ -1101,7 +1100,7 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dt class="label-workgroup">Workgroup:</dt>
 <dd class="workgroup">intarea</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
-<dd class="internet-draft">draft-joshco-sample</dd>
+<dd class="internet-draft">draft-joshco-wpadng-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
 <time datetime="2024-03-04" class="published">4 March 2024</time>
@@ -1119,63 +1118,62 @@ svg :is([fill="white"], [fill^="#fff"]) {
 </dd>
 </dl>
 </div>
-<h1 id="title">Sample</h1>
+<h1 id="title">Web Proxy Auto Discovery Next Generation</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This specification aims to modernize Web Proxy Automatic Discovery (WPAD)
+<p id="section-abstract-1">This specification aims to modernize Web Proxy Automatic Discovery (<span>[<a href="#WPAD" class="cite xref">WPAD</a>]</span>)
 which was defined in 1997.  At that time, the World Wide Web was much
 earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
 and Service Location Protocol were still evolving and/or not widely deployed.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2"><span>[<a href="#WPAD" class="cite xref">WPAD</a>]</span><a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
+<p id="section-abstract-2">Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
 approaches which, at the time of WPAD, were short-term solutions
-such as DNS A, DNS TXT.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
-<p id="section-abstract-4">In their place, WPADNG incorporates modern technologies such as
-DNS Service Discovery <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-abstract-4" class="pilcrow">¶</a></p>
-<p id="section-abstract-5">At the time of WPAD, the configuration foramt used was a Javascript snippet
+such as DNS A, DNS TXT.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">In their place, WPADNG incorporates modern technologies such as
+DNS Service Discovery <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">At the time of WPAD, the configuration foramt used was a Javascript snippet
 which Web Browsers, or in more recent times, a system service executed to
-determine the relevant proxy server for a given URL.<a href="#section-abstract-5" class="pilcrow">¶</a></p>
-<p id="section-abstract-6">In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
+determine the relevant proxy server for a given URL.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-5">In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
 hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
-of the device itself.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
-<p id="section-abstract-7">In that spirit, WPADNG will document how other, modern formats are used
-with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.<a href="#section-abstract-7" class="pilcrow">¶</a></p>
-<p id="section-abstract-8">WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
-and updating its sections based on feedback from the IETF community.<a href="#section-abstract-8" class="pilcrow">¶</a></p>
-<p id="section-abstract-9">This version of the specification makes the following changes:<a href="#section-abstract-9" class="pilcrow">¶</a></p>
-<p id="section-abstract-10">Deprecations/Removals<a href="#section-abstract-10" class="pilcrow">¶</a></p>
+of the device itself.<a href="#section-abstract-5" class="pilcrow">¶</a></p>
+<p id="section-abstract-6">In that spirit, WPADNG will document how other, modern formats are used
+with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
+<p id="section-abstract-7">WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
+and updating its sections based on feedback from the IETF community.<a href="#section-abstract-7" class="pilcrow">¶</a></p>
+<p id="section-abstract-8">This version of the specification makes the following changes:<a href="#section-abstract-8" class="pilcrow">¶</a></p>
+<p id="section-abstract-9">Deprecations/Removals<a href="#section-abstract-9" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-abstract-11.1">
-          <p id="section-abstract-11.1.1">Deprecate DNS A record discovery aka "Well known aliases"<a href="#section-abstract-11.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-abstract-10.1">
+          <p id="section-abstract-10.1.1">Deprecate DNS A record discovery aka "Well known aliases"<a href="#section-abstract-10.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-abstract-11.2">
-          <p id="section-abstract-11.2.1">Deprecate DNS TXT record discovery<a href="#section-abstract-11.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-abstract-10.2">
+          <p id="section-abstract-10.2.1">Deprecate DNS TXT record discovery<a href="#section-abstract-10.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-abstract-11.3">
-          <p id="section-abstract-11.3.1">Deprecate SLP/SRV discoery<a href="#section-abstract-11.3.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-abstract-10.3">
+          <p id="section-abstract-10.3.1">Deprecate SLP/SRV discoery<a href="#section-abstract-10.3.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-abstract-11.4">
-          <p id="section-abstract-11.4.1">Remove the prohibition of DNSSRV fallback since DNS A is being deprecated<a href="#section-abstract-11.4.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-abstract-10.4">
+          <p id="section-abstract-10.4.1">Remove the prohibition of DNSSRV fallback since DNS A is being deprecated<a href="#section-abstract-10.4.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-abstract-11.5">
-          <p id="section-abstract-11.5.1">Remove Conditional Compliance section<a href="#section-abstract-11.5.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-abstract-10.5">
+          <p id="section-abstract-10.5.1">Remove Conditional Compliance section<a href="#section-abstract-10.5.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-abstract-12">Additions
+<p id="section-abstract-11">Additions
 * DNS-SD Discovery Mechanism
-* Content type negotation to support PVD<a href="#section-abstract-12" class="pilcrow">¶</a></p>
-<p id="section-abstract-13">Open Issues:
-* Should TGTDOM iteration aka "DNS devolution" remain ?<a href="#section-abstract-13" class="pilcrow">¶</a></p>
-<p id="section-abstract-14">The original introduction follows:<a href="#section-abstract-14" class="pilcrow">¶</a></p>
-<p id="section-abstract-15">A mechanism is needed to permit web clients to locate nearby web
+* Content type negotation to support PVD<a href="#section-abstract-11" class="pilcrow">¶</a></p>
+<p id="section-abstract-12">Open Issues:
+* Should TGTDOM iteration aka "DNS devolution" remain ?<a href="#section-abstract-12" class="pilcrow">¶</a></p>
+<p id="section-abstract-13">The original introduction follows:<a href="#section-abstract-13" class="pilcrow">¶</a></p>
+<p id="section-abstract-14">A mechanism is needed to permit web clients to locate nearby web
 proxy caches. Current best practice is for end users to hand
 configure their web client (i.e., browser) with the URL of an "auto
 configuration file". In large environments this presents a
 formidable support problem.  It would be much more manageable for
 the web client software to automatically learn the configuration
 information for its web proxy settings. This is typically referred
-to as a resource discovery problem.<a href="#section-abstract-15" class="pilcrow">¶</a></p>
-<p id="section-abstract-16">Web client implementers are faced with a dizzying array of resource
+to as a resource discovery problem.<a href="#section-abstract-14" class="pilcrow">¶</a></p>
+<p id="section-abstract-15">Web client implementers are faced with a dizzying array of resource
 discovery protocols at varying levels of implementation and
 deployment. This complexity is hampering deployment of a "web proxy
 auto-discovery "facility.  This document proposes a pragmatic
@@ -1184,7 +1182,7 @@ proposed standards in the light of practical deployment concerns. It
 proposes an escalating strategy of resource discovery attempts in
 order to find a nearby web proxy server. It attempts to provide rich
 mechanisms for supporting a complex environment, which may contain
-multiple web proxy servers.<a href="#section-abstract-16" class="pilcrow">¶</a></p>
+multiple web proxy servers.<a href="#section-abstract-15" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1278,19 +1276,7 @@ multiple web proxy servers.<a href="#section-abstract-16" class="pilcrow">¶</a>
                     <p id="section-toc.1-1.3.2.4.2.2.1"><a href="#section-3.4.2" class="auto internal xref">3.4.2</a>.  <a href="#name-dns-serice-discovery-dns-sd" class="internal xref">DNS Serice Discovery (DNS-SD)</a></p>
 </li>
                   <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.3">
-                    <p id="section-toc.1-1.3.2.4.2.3.1"><a href="#section-3.4.3" class="auto internal xref">3.4.3</a>.  <a href="#name-ptr-record-definition" class="internal xref">PTR Record Definition</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.4">
-                    <p id="section-toc.1-1.3.2.4.2.4.1"><a href="#section-3.4.4" class="auto internal xref">3.4.4</a>.  <a href="#name-txt-record-definition" class="internal xref">TXT Record Definition</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.5">
-                    <p id="section-toc.1-1.3.2.4.2.5.1"><a href="#section-3.4.5" class="auto internal xref">3.4.5</a>.  <a href="#name-srv-record-definition" class="internal xref">SRV Record Definition</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.6">
-                    <p id="section-toc.1-1.3.2.4.2.6.1"><a href="#section-3.4.6" class="auto internal xref">3.4.6</a>.  <a href="#name-dnssd-client-behavior" class="internal xref">DNSSD Client behavior</a></p>
-</li>
-                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.7">
-                    <p id="section-toc.1-1.3.2.4.2.7.1"><a href="#section-3.4.7" class="auto internal xref">3.4.7</a>.  <a href="#name-timeouts" class="internal xref">Timeouts</a></p>
+                    <p id="section-toc.1-1.3.2.4.2.3.1"><a href="#section-3.4.3" class="auto internal xref">3.4.3</a>.  <a href="#name-timeouts" class="internal xref">Timeouts</a></p>
 </li>
                 </ul>
 </li>
@@ -1806,105 +1792,105 @@ WPADNG will have the following resource records:<a href="#section-3.4.2-1" class
 or a single instance.<a href="#section-3.4.2-2" class="pilcrow">¶</a></p>
 <p id="section-3.4.2-3"><span class="bcp14">MUST</span> advertise TXT records conformant with <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-3.4.2-3" class="pilcrow">¶</a></p>
 <p id="section-3.4.2-4"><span class="bcp14">SHOULD</span> advertise SRV records conformant with <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-3.4.2-4" class="pilcrow">¶</a></p>
-</section>
-</div>
 <div id="ptr-record-definition">
-<section id="section-3.4.3">
-          <h4 id="name-ptr-record-definition">
-<a href="#section-3.4.3" class="section-number selfRef">3.4.3. </a><a href="#name-ptr-record-definition" class="section-name selfRef">PTR Record Definition</a>
-          </h4>
-<p id="section-3.4.3-1">For example purposes, we assume a client has attached to the
-enterprise network at Example Coporation, which uses the dommain <code>example.org</code><a href="#section-3.4.3-1" class="pilcrow">¶</a></p>
-<p id="section-3.4.3-2">WPADNG PTR records should have the following naming scheme:<a href="#section-3.4.3-2" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-3.4.3-3">
+<section id="section-3.4.2.1">
+            <h5 id="name-ptr-record-definition">
+<a href="#section-3.4.2.1" class="section-number selfRef">3.4.2.1. </a><a href="#name-ptr-record-definition" class="section-name selfRef">PTR Record Definition</a>
+            </h5>
+<p id="section-3.4.2.1-1">For example purposes, we assume a client has attached to the
+enterprise network at Example Coporation, which uses the dommain <code>example.org</code><a href="#section-3.4.2.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.2.1-2">WPADNG PTR records should have the following naming scheme:<a href="#section-3.4.2.1-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.4.2.1-3">
 <pre>
 _wpadng._tcp.example.org
-</pre><a href="#section-3.4.3-3" class="pilcrow">¶</a>
+</pre><a href="#section-3.4.2.1-3" class="pilcrow">¶</a>
 </div>
-<p id="section-3.4.3-4">When a client queries for the PTR record, the DNS server replies
+<p id="section-3.4.2.1-4">When a client queries for the PTR record, the DNS server replies
 will contain zero, one or more responses.  These responses contain WPADNG
-instance names, and priorities.<a href="#section-3.4.3-4" class="pilcrow">¶</a></p>
+instance names, and priorities.<a href="#section-3.4.2.1-4" class="pilcrow">¶</a></p>
 <table class="center" id="table-2">
-            <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+              <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
 <thead>
-              <tr>
-                <th class="text-left" rowspan="1" colspan="1">Instance Name</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">primary._wpadng._tcp.example.org</td>
-              </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">secondary._wpadng._tcp.example.org</td>
-              </tr>
-              <tr>
-                <td class="text-left" rowspan="1" colspan="1">_wpadng._tcp.example.org</td>
-              </tr>
-            </tbody>
-          </table>
-<p id="section-3.4.3-6">In the above example. the enterprise advertises instance names for proxy servers
-  This allows an enterprise to provide redundancy and failover.<a href="#section-3.4.3-6" class="pilcrow">¶</a></p>
+                <tr>
+                  <th class="text-left" rowspan="1" colspan="1">Instance Name</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-left" rowspan="1" colspan="1">primary._wpadng._tcp.example.org</td>
+                </tr>
+                <tr>
+                  <td class="text-left" rowspan="1" colspan="1">secondary._wpadng._tcp.example.org</td>
+                </tr>
+                <tr>
+                  <td class="text-left" rowspan="1" colspan="1">_wpadng._tcp.example.org</td>
+                </tr>
+              </tbody>
+            </table>
+<p id="section-3.4.2.1-6">In the above example. the enterprise advertises instance names for proxy servers
+  This allows an enterprise to provide redundancy and failover.<a href="#section-3.4.2.1-6" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="txt-record-definition">
-<section id="section-3.4.4">
-          <h4 id="name-txt-record-definition">
-<a href="#section-3.4.4" class="section-number selfRef">3.4.4. </a><a href="#name-txt-record-definition" class="section-name selfRef">TXT Record Definition</a>
-          </h4>
-<p id="section-3.4.4-1">WPADNG DNS TXT records <span class="bcp14">MUST</span> have the following format<a href="#section-3.4.4-1" class="pilcrow">¶</a></p>
-<div class="alignLeft art-text artwork" id="section-3.4.4-2">
+<section id="section-3.4.2.2">
+            <h5 id="name-txt-record-definition">
+<a href="#section-3.4.2.2" class="section-number selfRef">3.4.2.2. </a><a href="#name-txt-record-definition" class="section-name selfRef">TXT Record Definition</a>
+            </h5>
+<p id="section-3.4.2.2-1">WPADNG DNS TXT records <span class="bcp14">MUST</span> have the following format<a href="#section-3.4.2.2-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.4.2.2-2">
 <pre>
 txtvers=1
 url=CURL
-</pre><a href="#section-3.4.4-2" class="pilcrow">¶</a>
+</pre><a href="#section-3.4.2.2-2" class="pilcrow">¶</a>
 </div>
-<p id="section-3.4.4-3">The CURL value is the URL to retrieve a Proxy Configuration FIle.<a href="#section-3.4.4-3" class="pilcrow">¶</a></p>
+<p id="section-3.4.2.2-3">The CURL value is the URL to retrieve a Proxy Configuration FIle.<a href="#section-3.4.2.2-3" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="srv-record-definition">
-<section id="section-3.4.5">
-          <h4 id="name-srv-record-definition">
-<a href="#section-3.4.5" class="section-number selfRef">3.4.5. </a><a href="#name-srv-record-definition" class="section-name selfRef">SRV Record Definition</a>
-          </h4>
-<p id="section-3.4.5-1">WPADNG DNS SRV records <span class="bcp14">MUST</span> be formatted according to <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span>.  If mulitple SRV records are returned in response to a query, the client should select a record according to the weight and priority rules laid out in the <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span> specification.<a href="#section-3.4.5-1" class="pilcrow">¶</a></p>
-<p id="section-3.4.5-2">When using SRV records, only a HOST and PORT are returned.  As a result the client <span class="bcp14">MUST</span> follow the rules in Composing Candidate URL.  In practice, that means appending "/wpad.dat"<a href="#section-3.4.5-2" class="pilcrow">¶</a></p>
+<section id="section-3.4.2.3">
+            <h5 id="name-srv-record-definition">
+<a href="#section-3.4.2.3" class="section-number selfRef">3.4.2.3. </a><a href="#name-srv-record-definition" class="section-name selfRef">SRV Record Definition</a>
+            </h5>
+<p id="section-3.4.2.3-1">WPADNG DNS SRV records <span class="bcp14">MUST</span> be formatted according to <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span>.  If mulitple SRV records are returned in response to a query, the client should select a record according to the weight and priority rules laid out in the <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span> specification.<a href="#section-3.4.2.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.2.3-2">When using SRV records, only a HOST and PORT are returned.  As a result the client <span class="bcp14">MUST</span> follow the rules in Composing Candidate URL.  In practice, that means appending "/wpad.dat"<a href="#section-3.4.2.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="dnssd-client-behavior">
-<section id="section-3.4.6">
-          <h4 id="name-dnssd-client-behavior">
-<a href="#section-3.4.6" class="section-number selfRef">3.4.6. </a><a href="#name-dnssd-client-behavior" class="section-name selfRef">DNSSD Client behavior</a>
-          </h4>
-<p id="section-3.4.6-1">When attempting to discover web proxy servers via <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span>, the following sequence should be used:<a href="#section-3.4.6-1" class="pilcrow">¶</a></p>
-<ol start="1" type="1" class="normal type-1" id="section-3.4.6-2">
-<li id="section-3.4.6-2.1">
-              <p id="section-3.4.6-2.1.1">Query PTR records<a href="#section-3.4.6-2.1.1" class="pilcrow">¶</a></p>
+<section id="section-3.4.2.4">
+            <h5 id="name-dnssd-client-behavior">
+<a href="#section-3.4.2.4" class="section-number selfRef">3.4.2.4. </a><a href="#name-dnssd-client-behavior" class="section-name selfRef">DNSSD Client behavior</a>
+            </h5>
+<p id="section-3.4.2.4-1">When attempting to discover web proxy servers via <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span>, the following sequence should be used:<a href="#section-3.4.2.4-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3.4.2.4-2">
+<li id="section-3.4.2.4-2.1">
+                <p id="section-3.4.2.4-2.1.1">Query PTR records<a href="#section-3.4.2.4-2.1.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="section-3.4.6-2.2">
-              <p id="section-3.4.6-2.2.1">Query TXT and SRV records<a href="#section-3.4.6-2.2.1" class="pilcrow">¶</a></p>
+              <li id="section-3.4.2.4-2.2">
+                <p id="section-3.4.2.4-2.2.1">Query TXT and SRV records<a href="#section-3.4.2.4-2.2.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="section-3.4.6-2.3">
-              <p id="section-3.4.6-2.3.1">Compose Candidate URL<a href="#section-3.4.6-2.3.1" class="pilcrow">¶</a></p>
+              <li id="section-3.4.2.4-2.3">
+                <p id="section-3.4.2.4-2.3.1">Compose Candidate URL<a href="#section-3.4.2.4-2.3.1" class="pilcrow">¶</a></p>
 </li>
-            <li id="section-3.4.6-2.4">
-              <p id="section-3.4.6-2.4.1">Retreive configuration file<a href="#section-3.4.6-2.4.1" class="pilcrow">¶</a></p>
+              <li id="section-3.4.2.4-2.4">
+                <p id="section-3.4.2.4-2.4.1">Retreive configuration file<a href="#section-3.4.2.4-2.4.1" class="pilcrow">¶</a></p>
 </li>
-          </ol>
+            </ol>
+</section>
+</div>
 </section>
 </div>
 <div id="timeouts">
-<section id="section-3.4.7">
+<section id="section-3.4.3">
           <h4 id="name-timeouts">
-<a href="#section-3.4.7" class="section-number selfRef">3.4.7. </a><a href="#name-timeouts" class="section-name selfRef">Timeouts</a>
+<a href="#section-3.4.3" class="section-number selfRef">3.4.3. </a><a href="#name-timeouts" class="section-name selfRef">Timeouts</a>
           </h4>
-<p id="section-3.4.7-1">Implementers are encouraged to limit the time elapsed in each
+<p id="section-3.4.3-1">Implementers are encouraged to limit the time elapsed in each
 discovery phase.  When possible, limiting each phase to 10 seconds
 is considered reasonable.  Implementers may choose a different value
 which is more appropriate to their network properties.  For example,
 a device implementation, which operated over a wireless network, may
 use a much larger timeout to account for low bandwidth or high
-latency.<a href="#section-3.4.7-1" class="pilcrow">¶</a></p>
+latency.<a href="#section-3.4.3-1" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>

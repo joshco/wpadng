@@ -8,18 +8,16 @@ Intended status: Informational                              4 March 2024
 Expires: 5 September 2024
 
 
-                                 Sample
-                          draft-joshco-sample
+                Web Proxy Auto Discovery Next Generation
+                       draft-joshco-wpadng-latest
 
 Abstract
 
    This specification aims to modernize Web Proxy Automatic Discovery
-   (WPAD) which was defined in 1997.  At that time, the World Wide Web
+   ([WPAD]) which was defined in 1997.  At that time, the World Wide Web
    was much earlier in its evolution.  Technologies such as DNS TEXT
    records, DHCP, and Service Location Protocol were still evolving and/
    or not widely deployed.
-
-   [WPAD]
 
    Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to
    deprecate approaches which, at the time of WPAD, were short-term
@@ -138,11 +136,7 @@ Table of Contents
      3.4.  Discovery Mechanisms
        3.4.1.  DHCP
        3.4.2.  DNS Serice Discovery (DNS-SD)
-       3.4.3.  PTR Record Definition
-       3.4.4.  TXT Record Definition
-       3.4.5.  SRV Record Definition
-       3.4.6.  DNSSD Client behavior
-       3.4.7.  Timeouts
+       3.4.3.  Timeouts
      3.5.  Composing a Candidate CURL
      3.6.  Retrieving the CFILE at the CURL
        3.6.1.  Content Negotation for PVD
@@ -568,7 +562,7 @@ Table of Contents
 
    SHOULD advertise SRV records conformant with [DNSSD]
 
-3.4.3.  PTR Record Definition
+3.4.2.1.  PTR Record Definition
 
    For example purposes, we assume a client has attached to the
    enterprise network at Example Coporation, which uses the dommain
@@ -598,7 +592,7 @@ Table of Contents
    proxy servers This allows an enterprise to provide redundancy and
    failover.
 
-3.4.4.  TXT Record Definition
+3.4.2.2.  TXT Record Definition
 
    WPADNG DNS TXT records MUST have the following format
 
@@ -607,7 +601,7 @@ Table of Contents
 
    The CURL value is the URL to retrieve a Proxy Configuration FIle.
 
-3.4.5.  SRV Record Definition
+3.4.2.3.  SRV Record Definition
 
    WPADNG DNS SRV records MUST be formatted according to [DNSSRV].  If
    mulitple SRV records are returned in response to a query, the client
@@ -618,7 +612,7 @@ Table of Contents
    result the client MUST follow the rules in Composing Candidate URL.
    In practice, that means appending "/wpad.dat"
 
-3.4.6.  DNSSD Client behavior
+3.4.2.4.  DNSSD Client behavior
 
    When attempting to discover web proxy servers via [DNSSD], the
    following sequence should be used:
@@ -631,7 +625,7 @@ Table of Contents
 
    4.  Retreive configuration file
 
-3.4.7.  Timeouts
+3.4.3.  Timeouts
 
    Implementers are encouraged to limit the time elapsed in each
    discovery phase.  When possible, limiting each phase to 10 seconds is
