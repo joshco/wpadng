@@ -9,7 +9,7 @@ Expires: 5 September 2024
 
 
                                  Sample
-                       draft-joshco-sample-latest
+                          draft-joshco-sample
 
 Abstract
 
