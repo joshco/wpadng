@@ -1,11 +1,20 @@
-# Sample
+# SAMPLE Drafts
 
-This is the working area for the individual Internet-Draft, "Sample".
+This is the working area for individual Internet-Drafts.
+
+## Sample
 
 * [Editor's Copy](https://joshco.github.io/wpadng/#go.draft-joshco-sample.html)
 * [Datatracker Page](https://datatracker.ietf.org/doc/draft-joshco-sample)
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-joshco-sample)
 * [Compare Editor's Copy to Individual Draft](https://joshco.github.io/wpadng/#go.draft-joshco-sample.diff)
+
+## Web Proxy Auto Discovery Next Generation
+
+* [Editor's Copy](https://joshco.github.io/wpadng/#go.draft-joshco-wpadng.html)
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-joshco-wpadng)
+* [Individual Draft](https://datatracker.ietf.org/doc/html/draft-joshco-wpadng)
+* [Compare Editor's Copy to Individual Draft](https://joshco.github.io/wpadng/#go.draft-joshco-wpadng.diff)
 
 
 ## Contributing
