@@ -6,7 +6,6 @@ category: info
 
 ipr: trust200902
 area: General
-workgroup: intarea
 keyword: Internet-Draft
 stream: independent
 
@@ -28,16 +27,19 @@ informative:
 
 --- abstract
 
-This specification aims to modernize Web Proxy Automatic Discovery ({{!WPAD=I-D.ietf-wrec-wpad-01}})
-which was defined in 1997.  At that time, the World Wide Web was much
-earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
-and Service Location Protocol were still evolving and/or not widely deployed.
+This specification aims to modernize Web Proxy Automatic Discovery ({{!WPAD=I-D.ietf-wrec-wpad-01}}) which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. This specification provides more modern discovery mechanisms and incorporates {{!PVD=I-D.draft-pauly-intarea-proxy-config-pvd-02}}
 
 
+--- middle
 
-Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
-approaches which, at the time of WPAD, were short-term solutions
-such as DNS A, DNS TXT.
+# Introduction
+
+Web Proxy Automatic Discovery Next Generation (WPADNG) defines a mechanism for Web Browsers, applications, or operating system services to discover nearby Web Proxy Severs.
+
+seeks to deprecate
+approaches which, at the time of the original WPAD, were short-term solutions
+such as DNS A, DNS TXT and SRV records.
 
 In their place, WPADNG incorporates modern technologies such as
 DNS Service Discovery {{!DNSSD=RFC6763}}
@@ -74,32 +76,6 @@ Additions
 
 Open Issues:
 * Should TGTDOM iteration aka "DNS devolution" remain ?
-
-The original introduction follows:
-
-A mechanism is needed to permit web clients to locate nearby web
-proxy caches. Current best practice is for end users to hand
-configure their web client (i.e., browser) with the URL of an "auto
-configuration file". In large environments this presents a
-formidable support problem.  It would be much more manageable for
-the web client software to automatically learn the configuration
-information for its web proxy settings. This is typically referred
-to as a resource discovery problem.
-
-Web client implementers are faced with a dizzying array of resource
-discovery protocols at varying levels of implementation and
-deployment. This complexity is hampering deployment of a "web proxy
-auto-discovery "facility.  This document proposes a pragmatic
-approach to web proxy auto-discovery.  It draws on a number of
-proposed standards in the light of practical deployment concerns. It
-proposes an escalating strategy of resource discovery attempts in
-order to find a nearby web proxy server. It attempts to provide rich
-mechanisms for supporting a complex environment, which may contain
-multiple web proxy servers.
-
---- middle
-
-# Introduction
 
 The problem of locating nearby web proxy cache servers can not wait
 for the implementation and large scale deployment of various
