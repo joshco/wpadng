@@ -2,10 +2,10 @@
 
 
 
-intarea                                                         J. Cohen
+Network Working Group                                           J. Cohen
 Internet-Draft                                                      Self
-Intended status: Informational                              4 March 2024
-Expires: 5 September 2024
+Intended status: Informational                               1 July 2024
+Expires: 2 January 2025
 
 
                 Web Proxy Auto Discovery Next Generation
@@ -15,77 +15,8 @@ Abstract
 
    This specification aims to modernize Web Proxy Automatic Discovery
    ([WPAD]) which was defined in 1997.  At that time, the World Wide Web
-   was much earlier in its evolution.  Technologies such as DNS TEXT
-   records, DHCP, and Service Location Protocol were still evolving and/
-   or not widely deployed.
-
-   Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to
-   deprecate approaches which, at the time of WPAD, were short-term
-   solutions such as DNS A, DNS TXT.
-
-   In their place, WPADNG incorporates modern technologies such as DNS
-   Service Discovery [DNSSD]
-
-   At the time of WPAD, the configuration foramt used was a Javascript
-   snippet which Web Browsers, or in more recent times, a system service
-   executed to determine the relevant proxy server for a given URL.
-
-   In many cases, this is overkill.  In others, such as embedded
-   Internet of Things (IoT), hosting a JavaScript engine and executing a
-   script for every URL may not be feasible, or represent complexity and
-   resource requirements that exceed the functionality of the device
-   itself.
-
-   In that spirit, WPADNG will document how other, modern formats are
-   used with discovery mechanisms.  An example is "Communicating Proxy
-   Configurations in Provisioning Domains", a draft currently being
-   developed.
-
-   WPADNG is a work in progress starting with draft-wrec-wpad-01 as a
-   baseline and updating its sections based on feedback from the IETF
-   community.
-
-   This version of the specification makes the following changes:
-
-   Deprecations/Removals
-
-   *  Deprecate DNS A record discovery aka "Well known aliases"
-
-   *  Deprecate DNS TXT record discovery
-
-   *  Deprecate SLP/SRV discovery
-
-   *  Remove the prohibition of DNSSRV fallback since DNS A is being
-      deprecated
-
-   *  Remove Conditional Compliance section
-
-   Additions * DNS-SD Discovery Mechanism * Content type negotation to
-   support PVD
-
-   Open Issues: * Should TGTDOM iteration aka "DNS devolution" remain ?
-
-   The original introduction follows:
-
-   A mechanism is needed to permit web clients to locate nearby web
-   proxy caches.  Current best practice is for end users to hand
-   configure their web client (i.e., browser) with the URL of an "auto
-   configuration file".  In large environments this presents a
-   formidable support problem.  It would be much more manageable for the
-   web client software to automatically learn the configuration
-   information for its web proxy settings.  This is typically referred
-   to as a resource discovery problem.
-
-   Web client implementers are faced with a dizzying array of resource
-   discovery protocols at varying levels of implementation and
-   deployment.  This complexity is hampering deployment of a "web proxy
-   auto-discovery "facility.  This document proposes a pragmatic
-   approach to web proxy auto-discovery.  It draws on a number of
-   proposed standards in the light of practical deployment concerns.  It
-   proposes an escalating strategy of resource discovery attempts in
-   order to find a nearby web proxy server.  It attempts to provide rich
-   mechanisms for supporting a complex environment, which may contain
-   multiple web proxy servers.
+   was much earlier in its evolution.  This specification provides more
+   modern discovery mechanisms and incorporates [PVD]
 
 Discussion Venues
 
@@ -109,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 5 September 2024.
+   This Internet-Draft will expire on 2 January 2025.
 
 Copyright Notice
 
@@ -154,6 +85,59 @@ Table of Contents
    Author's Address
 
 1.  Introduction
+
+   Web Proxy Automatic Discovery Next Generation (WPADNG) defines a
+   mechanism for Web Browsers, applications, or operating system
+   services to discover nearby Web Proxy Severs.
+
+   seeks to deprecate approaches which, at the time of the original
+   WPAD, were short-term solutions such as DNS A, DNS TXT and SRV
+   records.
+
+   In their place, WPADNG incorporates modern technologies such as DNS
+   Service Discovery [DNSSD]
+
+   At the time of WPAD, the configuration foramt used was a Javascript
+   snippet which Web Browsers, or in more recent times, a system service
+   executed to determine the relevant proxy server for a given URL.
+
+   In many cases, this is overkill.  In others, such as embedded
+   Internet of Things (IoT), hosting a JavaScript engine and executing a
+   script for every URL may not be feasible, or represent complexity and
+   resource requirements that exceed the functionality of the device
+   itself.
+
+   In that spirit, WPADNG will document how other, modern formats are
+   used with discovery mechanisms.  An example is "Communicating Proxy
+   Configurations in Provisioning Domains", a draft currently being
+   developed.
+
+   WPADNG is a work in progress starting with draft-wrec-wpad-01 as a
+   baseline and updating its sections based on feedback from the IETF
+   community.
+
+   This version of the specification makes the following changes:
+
+   Deprecations/Removals
+
+   *  Deprecate DNS A record discovery aka "Well known aliases"
+
+   *  Deprecate DNS TXT record discovery
+
+   *  Deprecate SLP/SRV discovery
+
+   *  Remove the prohibition of DNSSRV fallback since DNS A is being
+      deprecated
+
+   *  Remove Conditional Compliance section
+
+   Additions
+
+   *  DNS-SD Discovery Mechanism
+
+   *  Content type negotation to support PVD
+
+   Open Issues: * Should TGTDOM iteration aka "DNS devolution" remain ?
 
    The problem of locating nearby web proxy cache servers can not wait
    for the implementation and large scale deployment of various
@@ -821,6 +805,12 @@ Table of Contents
               specifying the location of services (DNS SRV)", RFC 2782,
               DOI 10.17487/RFC2782, February 2000,
               <https://www.rfc-editor.org/rfc/rfc2782>.
+
+   [PVD]      Pauly, T. and D. Damjanovic, "Communicating Proxy
+              Configurations in Provisioning Domains", Work in Progress,
+              Internet-Draft, draft-pauly-intarea-proxy-config-pvd-02, 1
+              March 2024, <https://datatracker.ietf.org/doc/html/draft-
+              pauly-intarea-proxy-config-pvd-02>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,

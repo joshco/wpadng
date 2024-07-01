@@ -6,70 +6,10 @@
 <meta content="initial-scale=1.0" name="viewport">
 <title>Web Proxy Auto Discovery Next Generation</title>
 <meta content="Josh Cohen" name="author">
-<meta content='
-       This specification aims to modernize Web Proxy Automatic Discovery ( )
-which was defined in 1997.  At that time, the World Wide Web was much
-earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
-and Service Location Protocol were still evolving and/or not widely deployed. 
-       Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
-approaches which, at the time of WPAD, were short-term solutions
-such as DNS A, DNS TXT. 
-       In their place, WPADNG incorporates modern technologies such as
-DNS Service Discovery  
-       At the time of WPAD, the configuration foramt used was a Javascript snippet
-which Web Browsers, or in more recent times, a system service executed to
-determine the relevant proxy server for a given URL. 
-       In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
-hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
-of the device itself. 
-       In that spirit, WPADNG will document how other, modern formats are used
-with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed. 
-       WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
-and updating its sections based on feedback from the IETF community. 
-       This version of the specification makes the following changes: 
-       Deprecations/Removals 
-       
-         
-           Deprecate DNS A record discovery aka "Well known aliases" 
-         
-         
-           Deprecate DNS TXT record discovery 
-         
-         
-           Deprecate SLP/SRV discovery 
-         
-         
-           Remove the prohibition of DNSSRV fallback since DNS A is being deprecated 
-         
-         
-           Remove Conditional Compliance section 
-         
-       
-       Additions
-* DNS-SD Discovery Mechanism
-* Content type negotation to support PVD 
-       Open Issues:
-* Should TGTDOM iteration aka "DNS devolution" remain ? 
-       The original introduction follows: 
-       A mechanism is needed to permit web clients to locate nearby web
-proxy caches. Current best practice is for end users to hand
-configure their web client (i.e., browser) with the URL of an "auto
-configuration file". In large environments this presents a
-formidable support problem.  It would be much more manageable for
-the web client software to automatically learn the configuration
-information for its web proxy settings. This is typically referred
-to as a resource discovery problem. 
-       Web client implementers are faced with a dizzying array of resource
-discovery protocols at varying levels of implementation and
-deployment. This complexity is hampering deployment of a "web proxy
-auto-discovery "facility.  This document proposes a pragmatic
-approach to web proxy auto-discovery.  It draws on a number of
-proposed standards in the light of practical deployment concerns. It
-proposes an escalating strategy of resource discovery attempts in
-order to find a nearby web proxy server. It attempts to provide rich
-mechanisms for supporting a complex environment, which may contain
-multiple web proxy servers. 
-    ' name="description">
+<meta content="
+       This specification aims to modernize Web Proxy Automatic Discovery ( ) which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. This specification provides more modern discovery mechanisms and incorporates  
+    " name="description">
 <meta content="xml2rfc 3.20.0" name="generator">
 <meta content="Internet-Draft" name="keyword">
 <meta content="draft-joshco-wpadng-latest" name="ietf.draft">
@@ -1086,11 +1026,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">wpadng</td>
-<td class="right">March 2024</td>
+<td class="right">July 2024</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Cohen</td>
-<td class="center">Expires 5 September 2024</td>
+<td class="center">Expires 2 January 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1098,17 +1038,17 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <div id="internal-metadata" class="document-information">
 <dl id="identifiers">
 <dt class="label-workgroup">Workgroup:</dt>
-<dd class="workgroup">intarea</dd>
+<dd class="workgroup">Network Working Group</dd>
 <dt class="label-internet-draft">Internet-Draft:</dt>
 <dd class="internet-draft">draft-joshco-wpadng-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-03-04" class="published">4 March 2024</time>
+<time datetime="2024-07-01" class="published">1 July 2024</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2024-09-05">5 September 2024</time></dd>
+<dd class="expires"><time datetime="2025-01-02">2 January 2025</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1121,68 +1061,8 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <h1 id="title">Web Proxy Auto Discovery Next Generation</h1>
 <section id="section-abstract">
       <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
-<p id="section-abstract-1">This specification aims to modernize Web Proxy Automatic Discovery (<span>[<a href="#WPAD" class="cite xref">WPAD</a>]</span>)
-which was defined in 1997.  At that time, the World Wide Web was much
-earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
-and Service Location Protocol were still evolving and/or not widely deployed.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
-<p id="section-abstract-2">Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
-approaches which, at the time of WPAD, were short-term solutions
-such as DNS A, DNS TXT.<a href="#section-abstract-2" class="pilcrow">¶</a></p>
-<p id="section-abstract-3">In their place, WPADNG incorporates modern technologies such as
-DNS Service Discovery <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-abstract-3" class="pilcrow">¶</a></p>
-<p id="section-abstract-4">At the time of WPAD, the configuration foramt used was a Javascript snippet
-which Web Browsers, or in more recent times, a system service executed to
-determine the relevant proxy server for a given URL.<a href="#section-abstract-4" class="pilcrow">¶</a></p>
-<p id="section-abstract-5">In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
-hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
-of the device itself.<a href="#section-abstract-5" class="pilcrow">¶</a></p>
-<p id="section-abstract-6">In that spirit, WPADNG will document how other, modern formats are used
-with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
-<p id="section-abstract-7">WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
-and updating its sections based on feedback from the IETF community.<a href="#section-abstract-7" class="pilcrow">¶</a></p>
-<p id="section-abstract-8">This version of the specification makes the following changes:<a href="#section-abstract-8" class="pilcrow">¶</a></p>
-<p id="section-abstract-9">Deprecations/Removals<a href="#section-abstract-9" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-abstract-10.1">
-          <p id="section-abstract-10.1.1">Deprecate DNS A record discovery aka "Well known aliases"<a href="#section-abstract-10.1.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-abstract-10.2">
-          <p id="section-abstract-10.2.1">Deprecate DNS TXT record discovery<a href="#section-abstract-10.2.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-abstract-10.3">
-          <p id="section-abstract-10.3.1">Deprecate SLP/SRV discovery<a href="#section-abstract-10.3.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-abstract-10.4">
-          <p id="section-abstract-10.4.1">Remove the prohibition of DNSSRV fallback since DNS A is being deprecated<a href="#section-abstract-10.4.1" class="pilcrow">¶</a></p>
-</li>
-        <li class="normal" id="section-abstract-10.5">
-          <p id="section-abstract-10.5.1">Remove Conditional Compliance section<a href="#section-abstract-10.5.1" class="pilcrow">¶</a></p>
-</li>
-      </ul>
-<p id="section-abstract-11">Additions
-* DNS-SD Discovery Mechanism
-* Content type negotation to support PVD<a href="#section-abstract-11" class="pilcrow">¶</a></p>
-<p id="section-abstract-12">Open Issues:
-* Should TGTDOM iteration aka "DNS devolution" remain ?<a href="#section-abstract-12" class="pilcrow">¶</a></p>
-<p id="section-abstract-13">The original introduction follows:<a href="#section-abstract-13" class="pilcrow">¶</a></p>
-<p id="section-abstract-14">A mechanism is needed to permit web clients to locate nearby web
-proxy caches. Current best practice is for end users to hand
-configure their web client (i.e., browser) with the URL of an "auto
-configuration file". In large environments this presents a
-formidable support problem.  It would be much more manageable for
-the web client software to automatically learn the configuration
-information for its web proxy settings. This is typically referred
-to as a resource discovery problem.<a href="#section-abstract-14" class="pilcrow">¶</a></p>
-<p id="section-abstract-15">Web client implementers are faced with a dizzying array of resource
-discovery protocols at varying levels of implementation and
-deployment. This complexity is hampering deployment of a "web proxy
-auto-discovery "facility.  This document proposes a pragmatic
-approach to web proxy auto-discovery.  It draws on a number of
-proposed standards in the light of practical deployment concerns. It
-proposes an escalating strategy of resource discovery attempts in
-order to find a nearby web proxy server. It attempts to provide rich
-mechanisms for supporting a complex environment, which may contain
-multiple web proxy servers.<a href="#section-abstract-15" class="pilcrow">¶</a></p>
+<p id="section-abstract-1">This specification aims to modernize Web Proxy Automatic Discovery (<span>[<a href="#WPAD" class="cite xref">WPAD</a>]</span>) which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. This specification provides more modern discovery mechanisms and incorporates <span>[<a href="#PVD" class="cite xref">PVD</a>]</span><a href="#section-abstract-1" class="pilcrow">¶</a></p>
 </section>
 <section class="note rfcEditorRemove" id="section-note.1">
       <h2 id="name-discussion-venues">
@@ -1211,7 +1091,7 @@ multiple web proxy servers.<a href="#section-abstract-15" class="pilcrow">¶</a>
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 5 September 2024.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 2 January 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1340,51 +1220,97 @@ multiple web proxy servers.<a href="#section-abstract-15" class="pilcrow">¶</a>
       <h2 id="name-introduction">
 <a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
       </h2>
-<p id="section-1-1">The problem of locating nearby web proxy cache servers can not wait
-for the implementation and large scale deployment of various<a href="#section-1-1" class="pilcrow">¶</a></p>
-<p id="section-1-2">upcoming resource discovery protocols. The widespread success of the
+<p id="section-1-1">Web Proxy Automatic Discovery Next Generation (WPADNG) defines a mechanism for Web Browsers, applications, or operating system services to discover nearby Web Proxy Severs.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">seeks to deprecate
+approaches which, at the time of the original WPAD, were short-term solutions
+such as DNS A, DNS TXT and SRV records.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">In their place, WPADNG incorporates modern technologies such as
+DNS Service Discovery <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">At the time of WPAD, the configuration foramt used was a Javascript snippet
+which Web Browsers, or in more recent times, a system service executed to
+determine the relevant proxy server for a given URL.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
+hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
+of the device itself.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">In that spirit, WPADNG will document how other, modern formats are used
+with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
+and updating its sections based on feedback from the IETF community.<a href="#section-1-7" class="pilcrow">¶</a></p>
+<p id="section-1-8">This version of the specification makes the following changes:<a href="#section-1-8" class="pilcrow">¶</a></p>
+<p id="section-1-9">Deprecations/Removals<a href="#section-1-9" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-10.1">
+          <p id="section-1-10.1.1">Deprecate DNS A record discovery aka "Well known aliases"<a href="#section-1-10.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-10.2">
+          <p id="section-1-10.2.1">Deprecate DNS TXT record discovery<a href="#section-1-10.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-10.3">
+          <p id="section-1-10.3.1">Deprecate SLP/SRV discovery<a href="#section-1-10.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-10.4">
+          <p id="section-1-10.4.1">Remove the prohibition of DNSSRV fallback since DNS A is being deprecated<a href="#section-1-10.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-10.5">
+          <p id="section-1-10.5.1">Remove Conditional Compliance section<a href="#section-1-10.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-11">Additions<a href="#section-1-11" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-12.1">
+          <p id="section-1-12.1.1">DNS-SD Discovery Mechanism<a href="#section-1-12.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-12.2">
+          <p id="section-1-12.2.1">Content type negotation to support PVD<a href="#section-1-12.2.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-13">Open Issues:
+* Should TGTDOM iteration aka "DNS devolution" remain ?<a href="#section-1-13" class="pilcrow">¶</a></p>
+<p id="section-1-14">The problem of locating nearby web proxy cache servers can not wait
+for the implementation and large scale deployment of various<a href="#section-1-14" class="pilcrow">¶</a></p>
+<p id="section-1-15">upcoming resource discovery protocols. The widespread success of the
 HTTP protocol and the recent popularity of streaming media has
 placed unanticipated strains on the networks of corporations, ISPs
 and backbone providers. There currently is no effective method for
 these organizations to realize the obvious benefits of web caching
 without tedious and error prone configuration by each and every end
-user.<a href="#section-1-2" class="pilcrow">¶</a></p>
-<p id="section-1-3">The de-facto mechanism for specifying a web proxy server
+user.<a href="#section-1-15" class="pilcrow">¶</a></p>
+<p id="section-1-16">The de-facto mechanism for specifying a web proxy server
 configuration in web clients is the download of a script or
 configuration file named by a URL. Users are currently expected to
 hand configure this URL into their Browser or other web client.
-This mechanism suffers from a number of drawbacks:<a href="#section-1-3" class="pilcrow">¶</a></p>
+This mechanism suffers from a number of drawbacks:<a href="#section-1-16" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-1-4.1">
-          <p id="section-1-4.1.1">Difficulty in supporting a large body of end-users. Many users
+<li class="normal" id="section-1-17.1">
+          <p id="section-1-17.1.1">Difficulty in supporting a large body of end-users. Many users
 misconfigure their proxy settings and are unable to diagnose the
-cause of their problems.<a href="#section-1-4.1.1" class="pilcrow">¶</a></p>
+cause of their problems.<a href="#section-1-17.1.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-4.2">
-          <p id="section-1-4.2.1">Lack of support for mobile clients who require a different proxy
-as their point of access changes.<a href="#section-1-4.2.1" class="pilcrow">¶</a></p>
+        <li class="normal" id="section-1-17.2">
+          <p id="section-1-17.2.1">Lack of support for mobile clients who require a different proxy
+as their point of access changes.<a href="#section-1-17.2.1" class="pilcrow">¶</a></p>
 </li>
-        <li class="normal" id="section-1-4.3">
-          <p id="section-1-4.3.1">Lack of support for complex proxy environments where there may
+        <li class="normal" id="section-1-17.3">
+          <p id="section-1-17.3.1">Lack of support for complex proxy environments where there may
 exist a number of proxy servers with different affinities for
 different clients (based on network proximity, for example).
 Currently, clients would have to "know" which proxy server was
-optimal for their use.<a href="#section-1-4.3.1" class="pilcrow">¶</a></p>
+optimal for their use.<a href="#section-1-17.3.1" class="pilcrow">¶</a></p>
 </li>
       </ul>
-<p id="section-1-5">Currently available methods for resource discovery need to be
+<p id="section-1-18">Currently available methods for resource discovery need to be
 exploited in the context of a well defined framework. Simple,
 functional and efficient mechanisms stand a good chance of solving
 this pressing and basic need. As new resource discovery mechanisms
 mature they can be folded into this framework with little
-difficulty.<a href="#section-1-5" class="pilcrow">¶</a></p>
-<p id="section-1-6">This document is a specification for implementers of web client
+difficulty.<a href="#section-1-18" class="pilcrow">¶</a></p>
+<p id="section-1-19">This document is a specification for implementers of web client
 software. It defines a protocol for automatically configuring those
 clients to use a local proxy. It also defines how an administrator
 should configure various resource discovery services in their
-network to support WPAD compatible web clients.<a href="#section-1-6" class="pilcrow">¶</a></p>
-<p id="section-1-7">While it does contain suggestions for web proxy server implementers,
-it does not make any specific demands of those parties.<a href="#section-1-7" class="pilcrow">¶</a></p>
+network to support WPAD compatible web clients.<a href="#section-1-19" class="pilcrow">¶</a></p>
+<p id="section-1-20">While it does contain suggestions for web proxy server implementers,
+it does not make any specific demands of those parties.<a href="#section-1-20" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="defining-web-proxy-auto-discovery">
@@ -2118,6 +2044,10 @@ security weaknesses.<a href="#section-8-3" class="pilcrow">¶</a></p>
 <dt id="DNSSRV">[DNSSRV]</dt>
       <dd>
 <span class="refAuthor">Gulbrandsen, A.</span>, <span class="refAuthor">Vixie, P.</span>, and <span class="refAuthor">L. Esibov</span>, <span class="refTitle">"A DNS RR for specifying the location of services (DNS SRV)"</span>, <span class="seriesInfo">RFC 2782</span>, <span class="seriesInfo">DOI 10.17487/RFC2782</span>, <time datetime="2000-02" class="refDate">February 2000</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2782">https://www.rfc-editor.org/rfc/rfc2782</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="PVD">[PVD]</dt>
+      <dd>
+<span class="refAuthor">Pauly, T.</span> and <span class="refAuthor">D. Damjanovic</span>, <span class="refTitle">"Communicating Proxy Configurations in Provisioning Domains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-pauly-intarea-proxy-config-pvd-02</span>, <time datetime="2024-03-01" class="refDate">1 March 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-pauly-intarea-proxy-config-pvd-02">https://datatracker.ietf.org/doc/html/draft-pauly-intarea-proxy-config-pvd-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
       <dd>
