@@ -298,7 +298,7 @@ latency.
 
 The client then requests the CURL via HTTP.
 
-### Content Negotation for PVD
+### Content Negotiation for PVD
 
 When making the request it MUST transmit HTTP "Accept" headers
 indicating what CFILE formats it is capable of accepting.
