@@ -38,19 +38,17 @@ earlier in its evolution. This specification provides more modern discovery mech
 Web Proxy Automatic Discovery Next Generation (WPADNG) defines a mechanism for Web Browsers, applications, or operating system services to discover nearby Web Proxy Severs.
 
 The Web Proxy Auto-Discovery (WPADNG) problem reduces to
-providing the web client a mechanism for discovering the URL of the Configuration File (CFILE). Once this Configuration File URL (CURL) is known, the
-client software already contains mechanisms for retrieving and
-interpreting the CFILE to enable access to the
+providing the web client a mechanism for discovering the URL of the Configuration File (CFILE). Once this Configuration File URL (CURL) is known, the client software already contains mechanisms for retrieving and interpreting the CFILE to enable access to the
 specified proxy cache servers.
 
-It is worth carefully noting that the goal of the wpadng process is to
-discover the correct CURL at which to retrieve the CFILE. The client
+The goal of the wpadng process is to discover the correct CURL at which to retrieve the CFILE. The client
 is *not* trying to directly discover the name of the proxy server.
 That would circumvent the additional capabilities provided by proxy
 Configuration Files (such as load balancing, request routing to an
-array of servers, automated fail-over to backup proxy server.
+array of servers, automated fail-over to backup proxy server.)
 
-It is worth noting that different clients requesting the CURL may
+
+Different clients requesting the CURL may
 receive completely different CFILEs in response. The web server may
 send back different CFILES based on a number of criteria such as the
 "User-Agent" header, "Accept" headers, client IP address/subnet,
@@ -62,18 +60,21 @@ This document will discuss a set of mechanisms for discovering the
 Configuration URL. The client will attempt them in a predefined
 order, until one succeeds.
 
+# CURLs and URNs
+
+When a CURL is returned by discovery, it SHOULD be either a URL which is retrievable or a URN.
+
+This specification defines the following URN for use with WPADNG.
+
+`urn:wpadng:none`
+
+When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client SHOULD stop any further discovery.  This can be helpful in avoiding unnecessary network round trips, preventing clients discovering rogue proxy servers.
+
 # The Discovery Process
 
 ## WPADNG Overview
 
-This sub-section will present a descriptive overview of the WPADNG
-protocol. It is intended to introduce the concepts and flow of the
-protocol. The remaining sub-sections (3.2-3.7) will provide the
-rigorous specification of the protocol details. WPADNG uses a
-collection of pre-existing Internet resource discovery mechanisms to
-perform web proxy auto-discovery. Readers may wish to refer to REF1
-for a similar approach to resource discovery, since it was a basis
-for this strategy.  The WPADNG protocol specifies the following:
+WPADNG uses a collection of pre-existing Internet resource discovery mechanisms to perform web proxy auto-discovery.  The WPADNG protocol specifies the following:
 
 - how to use each mechanism for the specific purpose of web proxy
     auto-discovery
@@ -81,33 +82,25 @@ for this strategy.  The WPADNG protocol specifies the following:
 - the minimal set of mechanisms which must be attempted by a WPADNG
     compliant web client
 
-The resource discovery mechanisms utilized by WPADNG are as follows.
-- DNS-SD
+The resource discovery mechanisms utilized by WPADNG, in order, are as follows.
 - Dynamic Host Configuration Protocol v4 or v6 depending on network.
+- DNS-SD
 
-The WPADNG client attempts a series of resource discovery requests,
-using the discovery mechanisms mentioned above, in a specific order.
 Clients only attempt mechanisms that they support. Each
 time the discovery attempt succeeds; the client uses the information
-obtained to construct a CURL. If a CFILE is successfully retrieved
+obtained to construct a CURL. If the CURL is the URN `urn:wpadng:none` or if a CFILE is successfully retrieved, the process is complete.
 
-at that CURL, the process completes. If not, the client resumes
-where it left of in the predefined series of resource discovery
-requests. If no untried mechanisms remain and a CFILE has not been
-successfully retrieved, the WPADNG protocol fails and the client is
-configured to use no proxy server.
+If not, the client resumes where it left of in the predefined series of resource discovery requests. If no untried mechanisms remain and a CFILE has not been successfully retrieved, the WPADNG protocol fails and the client is configured to use no proxy server.
 
-First the client tries DNSSD, followed by DHCP. If no CFILE has been
+First the client tries DHCP, followed by DNSSD. If no CFILE has been
 retrieved the client will retry the DNSSD mechanism multiple times. Each time through the QNAME being
 used in the DNSSD query is made less and less specific. In this manner
 the client can locate the most specific configuration information
 possible, but can fall back on less specific information. Every DNSSD
-lookup has the QNAME prefixed with “_wpadng._tcp” to indicate the resource
-type being requested.
+lookup has the QNAME prefixed with “_wpadng._tcp” to indicate the resource type being requested.
 
 As an example, consider a client with hostname johns-
-desktop.development.foo.com. Assume the web client software supports
-all of the mechanisms listed above. This is the sequence of
+desktop.development.example.com. Assume the web client software supports all of the mechanisms listed above. This is the sequence of
 discovery attempts the client would perform until one succeeded in
 locating a valid CFILE:
 
@@ -121,8 +114,9 @@ maintain correct proxy settings. This should occur on a regular
 basis corresponding to initialization of the client software or the
 networking stack below the client. As well, WPADNG will need to occur
 in response to expiration of existing configuration data.  The
-following sections describe the details of these scenarios.  3.2.1.
-Periodic Discovery
+following sections describe the details of these scenarios.
+
+### Periodic Discovery
 
 The web proxy auto-discovery process MUST occur at least as
 frequently as one of the following two options. A web client can use
@@ -190,11 +184,8 @@ mechanisms as possible, to promote maximum interoperability.
 
 | Discovery Mechanism     | Status     |
 | -------------------     | ------     |
-| DNS-SD                  | MUST       |
 | DHCP                    | MUST       |
-
-
-SUMMARY OF DISCOVERY MECHANISMS
+| DNS-SD                  | MUST       |
 
 ### DNS Serice Discovery (DNS-SD)
 
@@ -257,14 +248,13 @@ When attempting to discover web proxy servers via {{DNSSD}}, the following seque
 ### DHCP v4
 
 Client implementations MUST support DHCP. DHCP has widespread
-support innumerous vendor hardware and software implementations, and
+support in numerous vendor hardware and software implementations, and
 is widely deployed. It is also perfectly suited to this task, and is
 used to discover other network resources (such a time servers,
 printers, etc). The DHCP protocol is detailed in {{!DHCP=RFC2131}}.
 We propose a new DHCP option with code 252 for use in web proxy
-auto-discovery. See RFC 2132 REF7 for a list of existing DHCP
-options. See "Conditional Compliance" for more information on DHCP
-requirements.
+auto-discovery. See {{!DHCPOPT=RFC2132}} for a list of existing DHCP
+options.
 
 The client should obtain the value of the DHCP option code 252 as
 returned by the DHCP server. If the client has already conducted
@@ -278,8 +268,12 @@ group chair.  This option is of type STRING.  This string contains a
 URL which points to an appropriate config file.  The STRING is of
 arbitrary size.
 
-An example STRING value would be:
-"http://server.domain/proxyconfig.pac"
+Example values:
+
+~~~
+http://server.domain/proxyconfig.pac
+urn:wpadng:none
+~~~
 
 ### DHCP v6 (TBD)
 
@@ -376,6 +370,10 @@ security weaknesses.
 ## DHCPv6 Option Code
 
 This document requests a new DHCPv6 Option.
+
+## DHCPv4 Option Code
+
+This document seeks to register DHCPv4 option code 252.
 
 --- back
 
