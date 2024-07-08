@@ -1,0 +1,889 @@
+
+
+
+
+intarea                                                         J. Cohen
+Internet-Draft                                                      Self
+Intended status: Informational                              4 March 2024
+Expires: 5 September 2024
+
+
+                                 Sample
+                       draft-joshco-sample-latest
+
+Abstract
+
+   This specification aims to modernize Web Proxy Automatic Discovery
+   (WPAD) which was defined in 1997.  At that time, the World Wide Web
+   was much earlier in its evolution.  Technologies such as DNS TEXT
+   records, DHCP, and Service Location Protocol were still evolving and/
+   or not widely deployed.
+
+   [WPAD]
+
+   Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to
+   deprecate approaches which, at the time of WPAD, were short-term
+   solutions such as DNS A, DNS TXT.
+
+   In their place, WPADNG incorporates modern technologies such as DNS
+   Service Discovery [DNSSD]
+
+   At the time of WPAD, the configuration foramt used was a Javascript
+   snippet which Web Browsers, or in more recent times, a system service
+   executed to determine the relevant proxy server for a given URL.
+
+   In many cases, this is overkill.  In others, such as embedded
+   Internet of Things (IoT), hosting a JavaScript engine and executing a
+   script for every URL may not be feasible, or represent complexity and
+   resource requirements that exceed the functionality of the device
+   itself.
+
+   In that spirit, WPADNG will document how other, modern formats are
+   used with discovery mechanisms.  An example is "Communicating Proxy
+   Configurations in Provisioning Domains", a draft currently being
+   developed.
+
+   WPADNG is a work in progress starting with draft-wrec-wpad-01 as a
+   baseline and updating its sections based on feedback from the IETF
+   community.
+
+   This version of the specification makes the following changes:
+
+   Deprecations/Removals
+
+   *  Deprecate DNS A record discovery aka "Well known aliases"
+
+   *  Deprecate DNS TXT record discovery
+
+   *  Deprecate SLP/SRV discoery
+
+   *  Remove the prohibition of DNSSRV fallback since DNS A is being
+      deprecated
+
+   *  Remove Conditional Compliance section
+
+   Additions * DNS-SD Discovery Mechanism * Content type negotation to
+   support PVD
+
+   Open Issues: * Should TGTDOM iteration aka "DNS devolution" remain ?
+
+   The original introduction follows:
+
+   A mechanism is needed to permit web clients to locate nearby web
+   proxy caches.  Current best practice is for end users to hand
+   configure their web client (i.e., browser) with the URL of an "auto
+   configuration file".  In large environments this presents a
+   formidable support problem.  It would be much more manageable for the
+   web client software to automatically learn the configuration
+   information for its web proxy settings.  This is typically referred
+   to as a resource discovery problem.
+
+   Web client implementers are faced with a dizzying array of resource
+   discovery protocols at varying levels of implementation and
+   deployment.  This complexity is hampering deployment of a "web proxy
+   auto-discovery "facility.  This document proposes a pragmatic
+   approach to web proxy auto-discovery.  It draws on a number of
+   proposed standards in the light of practical deployment concerns.  It
+   proposes an escalating strategy of resource discovery attempts in
+   order to find a nearby web proxy server.  It attempts to provide rich
+   mechanisms for supporting a complex environment, which may contain
+   multiple web proxy servers.
+
+Discussion Venues
+
+   This note is to be removed before publishing as an RFC.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/joshco/wpadng.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 5 September 2024.
+
+Copyright Notice
+
+   Copyright (c) 2024 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Defining Web Proxy Auto-Discovery
+   3.  The Discovery Process
+     3.1.  WPAD Overview
+     3.2.  When to Execute WPAD
+       3.2.1.  Upon Startup of the Web Client
+       3.2.2.  Network Stack Events
+       3.2.3.  Expiration of the CFILE
+     3.3.  WPAD Protocol Specification
+     3.4.  Discovery Mechanisms
+       3.4.1.  DHCP
+       3.4.2.  DNS Serice Discovery (DNS-SD)
+       3.4.3.  PTR Record Definition
+       3.4.4.  TXT Record Definition
+       3.4.5.  SRV Record Definition
+       3.4.6.  DNSSD Client behavior
+       3.4.7.  Timeouts
+     3.5.  Composing a Candidate CURL
+     3.6.  Retrieving the CFILE at the CURL
+       3.6.1.  Content Negotation for PVD
+     3.7.  Resuming Discovery
+   4.  Client Implementation Considerations
+   5.  Proxy Server Considerations
+   6.  Administrator Considerations
+   7.  Conventions and Definitions
+   8.  Security Considerations
+   9.  IANA Considerations
+   10. Normative References
+   Appendix A.  Acknowledgments
+     A.1.  Acknowledgements for current versions
+     A.2.  Acknowledgements from previous versions
+   Author's Address
+
+1.  Introduction
+
+   The problem of locating nearby web proxy cache servers can not wait
+   for the implementation and large scale deployment of various
+
+   upcoming resource discovery protocols.  The widespread success of the
+   HTTP protocol and the recent popularity of streaming media has placed
+   unanticipated strains on the networks of corporations, ISPs and
+   backbone providers.  There currently is no effective method for these
+   organizations to realize the obvious benefits of web caching without
+   tedious and error prone configuration by each and every end user.
+
+   The de-facto mechanism for specifying a web proxy server
+   configuration in web clients is the download of a script or
+   configuration file named by a URL.  Users are currently expected to
+   hand configure this URL into their Browser or other web client.  This
+   mechanism suffers from a number of drawbacks:
+
+   *  Difficulty in supporting a large body of end-users.  Many users
+      misconfigure their proxy settings and are unable to diagnose the
+      cause of their problems.
+
+   *  Lack of support for mobile clients who require a different proxy
+      as their point of access changes.
+
+   *  Lack of support for complex proxy environments where there may
+      exist a number of proxy servers with different affinities for
+      different clients (based on network proximity, for example).
+      Currently, clients would have to "know" which proxy server was
+      optimal for their use.
+
+   Currently available methods for resource discovery need to be
+   exploited in the context of a well defined framework.  Simple,
+   functional and efficient mechanisms stand a good chance of solving
+   this pressing and basic need.  As new resource discovery mechanisms
+   mature they can be folded into this framework with little difficulty.
+
+   This document is a specification for implementers of web client
+   software.  It defines a protocol for automatically configuring those
+   clients to use a local proxy.  It also defines how an administrator
+   should configure various resource discovery services in their network
+   to support WPAD compatible web clients.
+
+   While it does contain suggestions for web proxy server implementers,
+   it does not make any specific demands of those parties.
+
+2.  Defining Web Proxy Auto-Discovery
+
+   As mentioned above, currently web client software needs to be
+   configured with the URL of a proxy auto-configuration file or script.
+   The contents of this script are vendor specific and not currently
+   standardized.  This document does not attempt to discuss the contents
+   of these files (see REF8 for an example file format).
+
+   Thus, the Web Proxy Auto-Discovery (WPAD) problem reduces to
+   providing the web client a mechanism for discovering the URL of the
+
+   Configuration File.  Once this Configuration URL (CURL) is known, the
+   client software already contains mechanisms for retrieving and
+   interpreting the Configuration File (CFILE) to enable access to the
+   specified proxy cache servers.
+
+   It is worth carefully noting that the goal of the WPAD process is to
+   discover the correct CURL at which to retrieve the CFILE.  The client
+   is _not_ trying to directly discover the name of the proxy server.
+   That would circumvent the additional capabilities provided by proxy
+   Configuration Files (such as load balancing, request routing to an
+   array of servers, automated fail-over to backup proxy server REF6,8).
+
+   It is worth noting that different clients requesting the CURL may
+   receive completely different CFILEs in response.  The web server may
+   send back different CFILES based on a number of criteria such as the
+   "User-Agent" header, "Accept" headers, client IP address/subnet, etc.
+   The same client could conceivably receive a different CFILE on
+   successive retrievals (as a method of round-robin load balancing, for
+   example).
+
+   This document will discuss a range of mechanisms for discovering the
+   Configuration URL.  The client will attempt them in a predefined
+   order, until one succeeds.  Existing widely deployed facilities may
+   not provide enough expressiveness to specify a complete URL.  As
+   such, we will define default values for portions of the CURL which
+   may not be expressible by some discovery mechanisms:
+
+   http://HOST:PORT/PATH
+
+   HOST - There is no default for this potion.  Any succeeding discovery
+   mechanism will provide a value for the HOST portion of the CURL.  The
+   client MUST NOT provide a default.
+
+   PORT - The client MUST assume port 80 if the successful discovery
+   mechanism does not provide a port component.
+
+   PATH - The client MUST assume a path of "/wpad.dat" if the successful
+   discovery mechanism does not provide a path component.
+
+3.  The Discovery Process
+
+3.1.  WPAD Overview
+
+   This sub-section will present a descriptive overview of the WPAD
+   protocol.  It is intended to introduce the concepts and flow of the
+   protocol.  The remaining sub-sections (3.2-3.7) will provide the
+   rigorous specification of the protocol details.  WPAD uses a
+   collection of pre-existing Internet resource discovery mechanisms to
+   perform web proxy auto-discovery.  Readers may wish to refer to REF1
+   for a similar approach to resource discovery, since it was a basis
+   for this strategy.  The WPAD protocol specifies the following:
+
+   *  how to use each mechanism for the specific purpose of web proxy
+      auto-discovery
+
+   *  the order in which the mechanisms should be performed
+
+   *  the minimal set of mechanisms which must be attempted by a WPAD
+      compliant web client
+
+   The resource discovery mechanisms utilized by WPAD are as follows. -
+   Dynamic Host Configuration Protocol (DHCP, REF3,7). - Service
+   Location Protocol (SLP, REF4). - "Well Known Aliases” using DNS A
+   records REF5,9. - DNS SRV records REF2,9. - "service: URLs" in DNS
+   TXT records REF10.
+
+   Of all these mechanisms only the DHCP and “Well Known Aliases” are
+   required in WPAD clients.  This decision is based on three reasons:
+   these facilities are currently widely deployed in existing vendor
+   hardware and software; they represent functionality that should cover
+   most real world environments; they are relatively simple to
+   implement.
+
+   DNS servers supporting A records are clearly the most widely deployed
+   of the services outlined above.  It is reasonable to expect API
+   support inside most web client development environments (POSIX C,
+   Java, etc).  The hierarchical nature of DNS makes it possible to
+   support hierarchies of proxy servers.
+
+   DNS is not suitable in every environment, unfortunately.
+   Administrators often choose a DNS domain name hierarchy that does not
+   correlate to network topologies, but rather with some organizational
+   model (for example, foo.development.bar.com and
+   foo.marketing.bar.com).  DHCP servers, on the other hand, are
+   frequently deployed with concern for network topologies.  DHCP
+   servers provide support for making configuration decisions based on
+   subnets, which are directly related to network topology.
+
+   Full client support for DHCP is not as ubiquitous as for DNS.  That
+   is, not all clients are equipped to take advantage of DHCP for their
+   essential network configuration (assignment of IP address, network
+   mask, etc).  APIs for DHCP are not as widely available.  Luckily,
+   using DHCP for WPAD does not require either of these facilities.  It
+   is relatively easy for web client developers to speak just the
+   minimal DHCP protocol to perform resource discovery.  It entails
+   building a simple UDP packet, sending it to the subnet broadcast
+   address, and parsing the reply UDP packet(s) which are received to
+   extract the WPAD option field.  A reference implementation of this
+   code in C is available REF11.
+
+   The WPAD client attempts a series of resource discovery requests,
+   using the discovery mechanisms mentioned above, in a specific order.
+   Clients only attempt mechanisms that they support (obviously).  Each
+   time the discovery attempt succeeds; the client uses the information
+   obtained to construct a CURL.  If a CFILE is successfully retrieved
+
+   at that CURL, the process completes.  If not, the client resumes
+   where it left of in the predefined series of resource discovery
+   requests.  If no untried mechanisms remain and a CFILE has not been
+   successfully retrieved, the WPAD protocol fails and the client is
+   configured to use no proxy server.
+
+   First the client tries DHCP, followed by SLP.  If no CFILE has been
+   retrieved the client moves on to the DNS based mechanisms.  The
+   client will cycle through the DNS SRV, “Well Known Aliases” and DNS
+   TXT record methods multiple times.  Each time through the QNAME being
+   used in the DNS query is made less and less specific.  In this manner
+   the client can locate the most specific configuration information
+   possible, but can fall back on less specific information.  Every DNS
+   lookup has the QNAME prefixed with “wpad” to indicate the resource
+   type being requested.
+
+   As an example, consider a client with hostname johns-
+   desktop.development.foo.com.  Assume the web client software supports
+   all of the mechanisms listed above.  This is the sequence of
+   discovery attempts the client would perform until one succeeded in
+   locating a valid CFILE:
+
+   *  DHCP
+
+   *  SLP
+
+   *  DNS A lookup on QNAME=wpad.development.foo.com.
+
+   *  DNS SRV lookup on QNAME=wpad.development.foo.com.
+
+   *  DNS TXT lookup on QNAME=wpad.development.foo.com.
+
+   *  DBS A lookup on QNAME=wpad.foo.com.
+
+   *  DNS SRV lookup on QNAME=wpad.foo.com.
+
+   *  DNS TXT lookup on QNAME=wpad.foo.com.
+
+3.2.  When to Execute WPAD
+
+   Web clients need to perform the WPAD protocol periodically to
+   maintain correct proxy settings.  This should occur on a regular
+   basis corresponding to initialization of the client software or the
+   networking stack below the client.  As well, WPAD will need to occur
+   in response to expiration of existing configuration data.  The
+   following sections describe the details of these scenarios.  3.2.1.
+   Periodic Discovery
+
+   The web proxy auto-discovery process MUST occur at least as
+   frequently as one of the following two options.  A web client can use
+   either option depending on which makes sense in their environment.
+   Clients MUST use at least one of the following options.  They MAY
+   also choose to implement both options. - Upon startup of the web
+   client. - Whenever there indication from the networking stack that
+   the IP address of the client host either has, or could have, changed.
+
+   In addition, the client MUST attempt a discovery cycle upon
+   expiration of a previously downloaded CFILE in accordance with
+   HTTP/1.1.
+
+3.2.1.  Upon Startup of the Web Client
+
+   For many types of web client (like web browsers) there can be many
+   instances of the client operating for a given user at one time.  This
+   is often to allow display of multiple web pages in different windows,
+   for example.  There is no need to re-perform WPAD every time a new
+   instance of the web client is opened.  WPAD MUST be performed when
+   the number of web client instances transitions from 0 to 1.  It
+   SHOULD NOT be performed as additional instances are created.
+
+3.2.2.  Network Stack Events
+
+   Another option for clients is to tie the execution of WPAD to changes
+   in the networking environment.  If the client can learn about the
+   change of the local host’s IP address, or the possible change of the
+   IP address, it MUST re-perform the WPAD protocol.  Many operating
+   systems provide indications of “network up” events, for example.
+   Those types of events and system-boot events might be the triggers
+   for WPAD in many environments.
+
+3.2.3.  Expiration of the CFILE
+
+   The HTTP retrieval of the CURL may return HTTP headers specifying a
+   valid lifetime for the CFILE returned.  The client MUST obey these
+   timeouts and rerun the PAD process when it expires.  A client MAY
+   rerun the WPAD process if it detects a failure of the currently
+   configured proxy (which is not otherwise recoverable via the inherent
+   mechanisms provided by the currently active Configuration File).
+
+   Whenever the client decides to invalidate the current CURL or CFILE,
+   it MUST rerun the entire WPAD protocol to ensure it discovers the
+   currently correct CURL.  Specifically, if the valid lifetime of the
+   CFILE ends(as specified by the HTTP headers provided when it was
+   retrieved),the complete WPAD protocol MUST be rerun.  The client MUST
+   NOT simply re-use the existing CURL to obtain a fresh copy of the
+   CFILE.
+
+   A number of network round trips, broadcast and/or multicast
+   communications may be required during the WPAD protocol.  The WPAD
+   protocol SHOULD NOT be invoked at a more frequent rate than specified
+   above (such as per-URL retrieval).
+
+3.3.  WPAD Protocol Specification
+
+   The following pseudo-code defines the WPAD protocol.  If a particular
+   discovery mechanism is not supported, treat it as a failed discovery
+   attempt in the pseudo-code.
+
+   In addition, this logic is expressed below in pseudo-code.  The
+   following pseudo-code fragment defines WPAD.  Unsupported discovery
+   mechanisms are treated as failure in the pseudo-code.
+
+   Two subroutines need explanation.  The subroutine
+   strip_leading_component(dns_string) strips off the leading
+   characters, up to and including the first dot (`.') in the string
+   which is passed as a parameter, and is expected to contain DNS name.
+   The Boolean subroutine is_not_canonical(dns_string) returns FALSE if
+   dns_string is one of the canonical domain suffixes defined in RFC
+   1591 REF13 (for example, "com").
+
+   The slp_list and dns_list elements below are assumed to be linked
+   lists containing a data field and a pointer to the next element.  The
+   data field contains the elements used to override the default values
+   in creating a CURL, as detailed in section 3.5.
+
+   load_CFILE() {
+   /* MUST use DHCP */
+   curl = dhcp_query(/*WPAD option  (section 4.4.1) */);
+   if (curl != null) {  /* DHCP succeeded */
+       if isvalid (read_CFILE(curl))
+           return SUCCESS;  /* valid CFILE */
+   }
+
+   /* Should use SLP */
+   slp_list = slp_query(/*(WPAD attributes  (Section 4.4.2)*/));
+   while (slp_list != null) {  /* test each curl  */
+       if isvalid(read_CFILE(slp_list.curl_data))
+           return SUCCESS;   /* valid CFILE */
+       else
+           slp_list = slp_list.next;
+   }
+
+   /* all the DNS mechanisms */
+   TGTDOM = gethostbyname(me);
+   TGTDOM = strip_leading_component(TGTDOM);
+
+   while (is_not_canonical(TGTDOM)) {
+
+       /* SHOULD try DNS SRV records */
+       dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                                   QTYPE=SRV (section 4.4.4)*/);
+       while (dns_list != null) { /* each TXT record */
+           if isvalid(read_CFILE(dns_list, curl_data))
+               return SUCCESS;   /* valid CFILE */
+           else
+               dns_list = dns_list.next;
+       }
+
+       /* SHOULD try DNS TXT records */
+       dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                                   QTYPE=TXT (section 4.4.5)*/);
+       while (dns_list != null) { /* each TXT record */
+           if isvalid(read_CFILE(dns_list, curl_data))
+               return SUCCESS;   /* valid CFILE */
+           else
+               dns_list = dns_list.next;
+       }
+
+       /* MUST try DNS A records */
+       dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                               QTYPE=A  (Section 4.4.3)*/);
+
+       while (dns_list != null) { /* check each A record */
+           if isvalid(read_CFILE(dns_list, curl_data))
+               return SUCCESS;   /* valid CFILE */
+           else
+               dns_list = dns_list.next;
+       }
+
+
+       /* Still no match, remove leading component and iterate */
+       TGTDOM = strip_leading_component(TGTDOM);
+
+   } /* no A, TXT or SRV records for wpad.* */
+
+   return FAILED;  /* could not locate valid CFILE */
+   }
+
+3.4.  Discovery Mechanisms
+
+   Each of the resource discovery methods will be marked as to whether
+   the client MUST, SHOULD, MAY, or MUST NOT implement them to be
+   compliant.  Client implementers are encouraged to implement as many
+   mechanisms as possible, to promote maximum interoperability.
+
+                     +=====================+========+
+                     | Discovery Mechanism | Status |
+                     +=====================+========+
+                     | DHCP                | MUST   |
+                     +---------------------+--------+
+                     | DNS-SD              | SHOULD |
+                     +---------------------+--------+
+
+                                 Table 1
+
+   SUMMARY OF DISCOVERY MECHANISMS
+
+3.4.1.  DHCP
+
+   Client implementations MUST support DHCP.  DHCP has widespread
+   support innumerous vendor hardware and software implementations, and
+   is widely deployed.  It is also perfectly suited to this task, and is
+   used to discover other network resources (such a time servers,
+   printers, etc).  The DHCP protocol is detailed in [DHCP].  We propose
+   a new DHCP option with code 252 for use in web proxy auto-discovery.
+   See RFC 2132 REF7 for a list of existing DHCP options.  See
+   "Conditional Compliance" for more information on DHCP requirements.
+
+   The client should obtain the value of the DHCP option code 252 as
+   returned by the DHCP server.  If the client has already conducted
+   DHCP protocol during its initialization, the DHCP server may already
+   have supplied that value.  If the value is not available through a
+   client OS API, the client SHOULD use a DHCPINFORM message to query
+   the DHCP server to obtain the value.
+
+   The DHCP option code for WPAD is 252 by agreement of the DHC working
+   group chair.  This option is of type STRING.  This string contains a
+   URL which points to an appropriate config file.  The STRING is of
+   arbitrary size.
+
+   An example STRING value would be: "http://server.domain/
+   proxyconfig.pac"
+
+3.4.2.  DNS Serice Discovery (DNS-SD)
+
+   Client implementations MUST support [DNSSD] discovery of proxy
+   configuration files.  To suport this, a DNS server advertising WPADNG
+   will have the following resource records:
+
+   SHOULD advertise PTR records which may return multiple advertised
+   service instances or a single instance.
+
+   MUST advertise TXT records conformant with [DNSSD]
+
+   SHOULD advertise SRV records conformant with [DNSSD]
+
+3.4.3.  PTR Record Definition
+
+   For example purposes, we assume a client has attached to the
+   enterprise network at Example Coporation, which uses the dommain
+   example.org
+
+   WPADNG PTR records should have the following naming scheme:
+
+   _wpadng._tcp.example.org
+
+   When a client queries for the PTR record, the DNS server replies will
+   contain zero, one or more responses.  These responses contain WPADNG
+   instance names, and priorities.
+
+                  +====================================+
+                  | Instance Name                      |
+                  +====================================+
+                  | primary._wpadng._tcp.example.org   |
+                  +------------------------------------+
+                  | secondary._wpadng._tcp.example.org |
+                  +------------------------------------+
+                  | _wpadng._tcp.example.org           |
+                  +------------------------------------+
+
+                                 Table 2
+
+   In the above example. the enterprise advertises instance names for
+   proxy servers This allows an enterprise to provide redundancy and
+   failover.
+
+3.4.4.  TXT Record Definition
+
+   WPADNG DNS TXT records MUST have the following format
+
+   txtvers=1
+   url=CURL
+
+   The CURL value is the URL to retrieve a Proxy Configuration FIle.
+
+3.4.5.  SRV Record Definition
+
+   WPADNG DNS SRV records MUST be formatted according to [DNSSRV].  If
+   mulitple SRV records are returned in response to a query, the client
+   should select a record according to the weight and priority rules
+   laid out in the [DNSSRV] specification.
+
+   When using SRV records, only a HOST and PORT are returned.  As a
+   result the client MUST follow the rules in Composing Candidate URL.
+   In practice, that means appending "/wpad.dat"
+
+3.4.6.  DNSSD Client behavior
+
+   When attempting to discover web proxy servers via [DNSSD], the
+   following sequence should be used:
+
+   1.  Query PTR records
+
+   2.  Query TXT and SRV records
+
+   3.  Compose Candidate URL
+
+   4.  Retreive configuration file
+
+3.4.7.  Timeouts
+
+   Implementers are encouraged to limit the time elapsed in each
+   discovery phase.  When possible, limiting each phase to 10 seconds is
+   considered reasonable.  Implementers may choose a different value
+   which is more appropriate to their network properties.  For example,
+   a device implementation, which operated over a wireless network, may
+   use a much larger timeout to account for low bandwidth or high
+   latency.
+
+3.5.  Composing a Candidate CURL
+
+   Any successful discovery mechanism response will provide a
+   HOST(perhaps in the form of an IP address).  Some mechanisms will
+   also provide a PORT and/or a PATH.  The client should override the
+   default CURL fields with all of those supplied by the discovery
+   mechanism.
+
+3.6.  Retrieving the CFILE at the CURL
+
+   The client then requests the CURL via HTTP.
+
+3.6.1.  Content Negotation for PVD
+
+   When making the request it MUST transmit HTTP "Accept" headers
+   indicating what CFILE formats it is capable of accepting.
+
+   For PVD, the Accept header value is application/pvd_json
+
+   For existing WPAD clients, the most commonly used format is
+   Netscape's Proxy Auto Config (PAC) file, the value is 'application/x-
+   ns-proxy-autoconfig'
+
+   Clients that support PVD can use content negotiation to prefer PVD,
+   while accepting PAC as a fallback.
+
+   :method = GET
+   :authority = HOST
+   :path = PATH
+   accept = application/pvd+json
+   accept = application/x-ns-proxy-autoconfig
+
+   Clients that do not support PVD will continue to use PAC, and not
+   include PVD in the accept header.
+
+   When receiving a GET at the CURL, a proxy server can decide wether to
+   return PVD or PAC, providing backward compatibility as well as an
+   upgrade path.
+
+   The client MUST follow HTTP redirect directives (response codes 3xx)
+   returned by the server.  The client SHOULD send a valid "User-Agent"
+   header.
+
+3.7.  Resuming Discovery
+
+   If the HTTP request fails for any reason (fails to connect, server
+   error response, etc) the client MUST resume the search for a
+   successful CURL where it left off.  It should continue attempting
+   other sub-steps in a specific discovery mechanism, and then move on
+   to the next mechanism or TGTDOM iteration, etc.
+
+4.  Client Implementation Considerations
+
+   The large number of discovery mechanisms specified in this document
+   may raise concerns about network traffic and performance.  The DHCP
+   portion of the process will result in a single broadcast by the
+   client, and perhaps a few replies by listening DHCP servers.
+
+   The remaining mechanisms are all DNS based.  All DNS queries should
+   have the QNAME terminated with a trailing '.' to indicate a FQDN and
+   expedite the lookup.  As such each TGTDOM iteration will cause 3 DNS
+   lookups, each a unicast UDP packet and a reply.  Most clients will
+   have fewer than 2TGTDOM iterations, limiting the total number of DNS
+   request/replies to6.
+
+   All total, 7 UDP request/reply packets on client startup is quite a
+   low overhead.  The first web page downloaded by the client will
+   likely dwarf that packet count.  Each of the DNS lookups should stand
+   a high chance of hitting the cache in the client's DNS server, since
+   other clients will have likely looked them up recently, providing a
+   low total elapsed time.
+
+   This is of course the worst case, where no CURLS are obtained, and
+   assuming a long client FQDN.  Often, a successful CURL will be found
+   early in the protocol, reducing the total packet count.  Client
+   implementations are encouraged to overlap this protocol work with
+   other startup activities.  Also, client implementers with concerns
+   about performance can choose to implement only the discovery
+   mechanisms listed as MUST in section 3.4.
+
+   A longer delay could occur if a CURL is obtained, but the hosting web
+   server is down.  The client could spend considerable time waiting for
+   the TCP “connect ()” call to fail.  Luckily this is an extremely rare
+   case where the web server hosting the CFILE has failed.  See section
+   5, where proxy server implementers are encouraged to provide support
+   for hosting CURLs on the proxy itself (acting as web server).  Since
+   proxy servers are often deployed with considerable attention to fault
+   tolerance, this corner case can be further minimized.
+
+5.  Proxy Server Considerations
+
+   As mentioned in the previous section, it is suggested that proxy
+   servers be capable of acting as a web server, so that they can host
+   the CURL directly.
+
+   The implementers of proxy servers are most likely to understand the
+   deployment situations of proxy caches, the formats of proxy
+   configuration files, etc.  They can also build in the ability select
+   a CFILE based on all the various inputs at the time of the CURL
+   request("User-Agent", "Accept", client IP address/subnet/hostname,
+   topological distribution of nearby proxy servers, etc).
+
+6.  Administrator Considerations
+
+   Administrators should configure at least one of the DHCP or DNS A RR
+   methods in their environment (since those are the only two all
+   compatible clients MUST implement).  Beyond that, configuring to
+   support mechanisms earlier in the search order will improve client
+   startup time.
+
+   One of the major motivations for this protocol structure was to
+   support client location of "nearby" proxy servers.  In many
+   environments there may be a number of proxy servers (workgroup,
+   corporate gateway, ISP, backbone).  There are a number of possible
+   points at which "nearness" decisions can be made in this framework:
+
+   *  DHCP servers for different subnets can return different answers.
+      They can also base decisions on the client cipaddr field or the
+      client identifier option.
+
+   *  DNS servers can be configured to return different SRV/A/TXT RRs
+      for Different domain suffixes (for example, QNAMEs
+      wpad.marketing.bigcorp.com and wpad.development.bigcorp.com).
+
+   *  The web server handling the CURL request can make decisions based
+      on the "User-Agent", "Accept", client IP address/subnet/hostname,
+      and the topological distribution of nearby proxy servers, etc.
+      This can occur inside a CGI executable created to handle the CURL.
+      As mentioned above it could be a proxy server itself handing the
+      CURL request and making those decisions.
+
+   *  The CFILE may be expressive enough to select from a set of
+      alternatives at "runtime" on the client.  CARP REF6 is based on
+      this premise for an array of caches.  It is not inconceivable that
+      the CFILE could compute some network distance or fitness metrics
+      to a set of candidate proxy servers and then select the "closest"
+      or "most responsive" server.
+
+   Note that it is valid to configure a DHCP daemon to respond only to
+   INFORM option queries in static IP environments
+
+   Not all of the above mechanisms can be supported in all currently
+   deployed vendor hardware and software.  The hope is that enough
+   flexibility is provided in this framework that administrators can
+   select which mechanisms will work in their environments.
+
+7.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+8.  Security Considerations
+
+   This document does not address security of the protocols involved.
+   The WPAD protocol is vulnerable to existing identified weaknesses in
+   DHCP and DNS.  The groups driving those standards, as well as the SLP
+   protocol standards, are addressing security.
+
+   When using DHCP discovery, clients are encouraged to use unicast DHCP
+   INFORM queries instead of broadcast queries which are more easily
+   spoofed in insecure networks.
+
+   Minimally, it can be said that the WPAD protocol does not create new
+   security weaknesses.
+
+9.  IANA Considerations
+
+   This document has no IANA actions.
+
+10.  Normative References
+
+   [DHCP]     Droms, R., "Dynamic Host Configuration Protocol",
+              RFC 2131, DOI 10.17487/RFC2131, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2131>.
+
+   [DNSSD]    Cheshire, S. and M. Krochmal, "DNS-Based Service
+              Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
+              <https://www.rfc-editor.org/rfc/rfc6763>.
+
+   [DNSSRV]   Gulbrandsen, A., Vixie, P., and L. Esibov, "A DNS RR for
+              specifying the location of services (DNS SRV)", RFC 2782,
+              DOI 10.17487/RFC2782, February 2000,
+              <https://www.rfc-editor.org/rfc/rfc2782>.
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [WPAD]     Perkins, C. E., Cohen, J., Dunsmuir, M., Gauthier, P. A.,
+              Cooper, I., and J. W. C. M.A., "Web Proxy Auto-Discovery
+              Protocol", Work in Progress, Internet-Draft, draft-ietf-
+              wrec-wpad-01, 29 July 1999,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-wrec-
+              wpad-01>.
+
+Appendix A.  Acknowledgments
+
+A.1.  Acknowledgements for current versions
+
+   The editor(s) of this specification would like acknowledge the
+   contributions of the previous authors.
+
+   Paul Gauthier Inktomi Corporation
+
+   Martin Dunsmuir RealNetworks, Inc.
+
+   Charles Perkins Sun Microsystems, Inc.
+
+A.2.  Acknowledgements from previous versions
+
+   The authors' work on this specification would be incomplete without
+   the assistance of many people.  Specifically, the authors would like
+   the express their gratitude to the following people:
+
+   Chuck Neerdaels, Inktomi, for providing assistance in the design of
+   the WPAD protocol as well as for providing reference implementations.
+
+   Arthur Bierer, Darren Mitchell, Sean Edmison, Mario Rodriguez, Danpo
+   Zhang, and Yaron Goland, Microsoft, for providing implementation
+   insights as well as testing and deployment.
+
+   Ari Luotonen, Netscape, for his role in designing the first web
+   proxy.
+
+   In addition, the authors are grateful for the feedback provided by
+   the following people:
+
+   *  Jeremy Worley - RealNetworks
+
+   *  Eric Twitchell - United Parcel Service
+
+   end of draft
+
+Author's Address
+
+   Josh Cohen
+   Self
+   Email: joshco@gmail.com

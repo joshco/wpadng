@@ -1,0 +1,2226 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Sample</title>
+<meta content="Josh Cohen" name="author">
+<meta content='
+       This specification aims to modernize Web Proxy Automatic Discovery (WPAD)
+which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
+and Service Location Protocol were still evolving and/or not widely deployed. 
+       
+       Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
+approaches which, at the time of WPAD, were short-term solutions
+such as DNS A, DNS TXT. 
+       In their place, WPADNG incorporates modern technologies such as
+DNS Service Discovery  
+       At the time of WPAD, the configuration foramt used was a Javascript snippet
+which Web Browsers, or in more recent times, a system service executed to
+determine the relevant proxy server for a given URL. 
+       In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
+hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
+of the device itself. 
+       In that spirit, WPADNG will document how other, modern formats are used
+with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed. 
+       WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
+and updating its sections based on feedback from the IETF community. 
+       This version of the specification makes the following changes: 
+       Deprecations/Removals 
+       
+         
+           Deprecate DNS A record discovery aka "Well known aliases" 
+         
+         
+           Deprecate DNS TXT record discovery 
+         
+         
+           Deprecate SLP/SRV discoery 
+         
+         
+           Remove the prohibition of DNSSRV fallback since DNS A is being deprecated 
+         
+         
+           Remove Conditional Compliance section 
+         
+       
+       Additions
+* DNS-SD Discovery Mechanism
+* Content type negotation to support PVD 
+       Open Issues:
+* Should TGTDOM iteration aka "DNS devolution" remain ? 
+       The original introduction follows: 
+       A mechanism is needed to permit web clients to locate nearby web
+proxy caches. Current best practice is for end users to hand
+configure their web client (i.e., browser) with the URL of an "auto
+configuration file". In large environments this presents a
+formidable support problem.  It would be much more manageable for
+the web client software to automatically learn the configuration
+information for its web proxy settings. This is typically referred
+to as a resource discovery problem. 
+       Web client implementers are faced with a dizzying array of resource
+discovery protocols at varying levels of implementation and
+deployment. This complexity is hampering deployment of a "web proxy
+auto-discovery "facility.  This document proposes a pragmatic
+approach to web proxy auto-discovery.  It draws on a number of
+proposed standards in the light of practical deployment concerns. It
+proposes an escalating strategy of resource discovery attempts in
+order to find a nearby web proxy server. It attempts to provide rich
+mechanisms for supporting a complex environment, which may contain
+multiple web proxy servers. 
+    ' name="description">
+<meta content="xml2rfc 3.20.0" name="generator">
+<meta content="Internet-Draft" name="keyword">
+<meta content="draft-joshco-sample-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.20.0
+    Python 3.11.6
+    ConfigArgParse 1.7
+    google-i18n-address 3.1.0
+    intervaltree 3.1.0
+    Jinja2 3.1.3
+    lxml 4.9.4
+    platformdirs 4.2.0
+    pycountry 23.12.11
+    PyYAML 6.0.1
+    requests 2.31.0
+    setuptools 69.1.1
+    six 1.16.0
+    wcwidth 0.2.13
+-->
+<link href="draft-joshco-sample.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Cabin Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Cabin Condensed SemiBold'), local('CabinCondensed-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/cabincondensed-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Cabin Condensed", sans-serif;
+  font-weight: 600;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1#title {
+  font-size: 32px;
+  line-height: 40px;
+  clear: both;
+}
+h1#title, h1#rfcnum {
+  margin: 1.5em 0 0.2em;
+}
+h1#rfcnum + h1#title {
+  margin: 0.2em 0;
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+}
+#abstract+p code, #abstract+p samp, #abstract+p tt {
+  font-size: 16px;
+  line-height: 0;
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignRight.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignRight {
+  margin: 1em 0;
+}
+.alignRight > *:first-child {
+  border: none;
+  margin: 0;
+  float: right;
+  clear: both;
+}
+.alignRight > *:nth-child(2) {
+  clear: both;
+  display: block;
+  border: none;
+}
+svg {
+  display: block;
+}
+/* font-family isn't space-separated, but =~ will have to do */
+svg[font-family~="monospace" i], svg [font-family~="monospace" i] {
+  font-family: var(--font-mono);
+}
+.alignCenter.art-text {
+  background-color: var(--highlight-color);
+  border: 1px solid var(--line-color);
+  border-radius: 3px;
+  padding: 0.5em 1em 0;
+  margin-bottom: 0.5em;
+}
+.alignCenter.art-text pre {
+  padding: 0;
+  width: auto;
+}
+.alignCenter {
+  margin: 1em 0;
+}
+.alignCenter > *:first-child {
+  border: none;
+  /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+     support flexbox yet.
+  */
+  display: table;
+  margin: 0 auto;
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+}
+:is(ol, ul) :is(ol, ul) {
+  margin-left: 1em;
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+.ulCompact li {
+  margin: 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+}
+ul.empty li, .ulEmpty li {
+  margin-top: 0.5em;
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  line-height: 1;
+  margin: 0 0 0 2em;
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+}
+dl.olPercent {
+  --indent: 5ch;
+}
+dl > dt {
+  float: left;
+  margin-right: 2ch;
+  min-width: 8ch;
+}
+dl.dlNewline > dt {
+  float: none;
+}
+dl > dd {
+  margin-bottom: .8em;
+  margin-left: var(--indent) !important; /* stupid element overrides */
+  min-height: 2ex;
+}
+dl.olPercent > dt {
+  min-width: calc(var(--indent) - 2ch);
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:first-child, .break:first-child + *) {
+  margin-top: 0;
+}
+:is(dl.compact, .dlCompact) > dd > :is(:last-child) {
+  margin-bottom: 0;
+}
+dl > dd > dl {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a, a[href].selfRef:hover {
+  text-decoration: none;
+}
+a[href] {
+  color: var(--link-color);
+}
+a[href].selfRef, .iref + a[href].internal {
+  color: var(--text-color);
+}
+a[href]:hover {
+  text-decoration: underline;
+}
+a[href].selfRef:hover {
+  background-color: var(--highlight-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+}
+figure blockquote {
+  margin: 0.8em 0.4em 0.4em;
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) p {
+    margin: -2px 0;
+    max-height: 0;
+    transition: max-height 2s ease, margin 0.5s ease 0.5s;
+    overflow: hidden;
+  }
+  :is(#status-of-memo, #copyright):hover p,
+  :is(#status-of-memo, #copyright) h2:target ~ p {
+    margin: 0.5em 0;
+    max-height: 500px;
+    overflow: auto;
+  }
+  pre, svg {
+    display: inline-block;
+    overflow-x: auto;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+table.right {
+  margin-left: auto;
+}
+table.center {
+  margin-left: auto;
+  margin-right: auto;
+}
+table.left {
+  margin-right: auto;
+}
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+table caption {
+  margin: 0;
+  padding: 3px 0 3px 1em;
+}
+table p {
+  margin: 0;
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+}
+a.pilcrow[href] { color: var(--pilcrow-weak); }
+a.pilcrow[href]:hover { text-decoration: none; }
+@media not print {
+  :hover > a.pilcrow {
+    opacity: 1;
+  }
+  a.pilcrow[href]:hover {
+    color: var(--pilcrow-strong);
+    background-color: transparent;
+  }
+}
+@media print {
+  a.pilcrow {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+}
+#identifiers dt {
+  width: var(--identifier-width);
+  min-width: var(--identifier-width);
+  clear: left;
+  float: left;
+  text-align: right;
+  margin-right: 1ch;
+}
+#identifiers dd {
+  margin: 0;
+  margin-left: calc(1em + var(--identifier-width)) !important;
+  min-width: 5em;
+}
+#identifiers .authors .author {
+  display: inline-block;
+  margin-right: 1.5em;
+}
+#identifiers .authors .org {
+  font-style: italic;
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+}
+.docInfo .prepared {
+  float: left;
+}
+.docInfo .prepared {
+  float: right;
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+}
+#toc nav ul {
+  margin: 0 0.5em 0 0;
+  padding: 0;
+  list-style: none;
+}
+#toc nav li {
+  line-height: 1.3em;
+  margin: 2px 0;
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+#toc a.xref {
+  white-space: normal;
+}
+/* references */
+.references dt {
+  text-align: right;
+  font-weight: bold;
+  min-width: 10ch;
+  margin-right: 1.5ch;
+}
+.references dt:target::before {
+  content: "⇒";
+  width: 15px;
+  margin: 0 10px 0 -25px;
+}
+.references dd {
+  margin-left: 12ch !important;
+  overflow: auto;
+}
+
+.refInstance {
+  margin-bottom: 1.25em;
+}
+
+.references .ascii {
+  margin-bottom: 0.25em;
+}
+
+/* index */
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  margin: 1em 0;
+}
+address.vcard .nameRole {
+  font-weight: 700;
+  margin-left: 0;
+}
+address.vcard .label {
+  margin: 0.5em 0;
+}
+address.vcard .type {
+  display: none;
+}
+.alternative-contact {
+  margin: 1.5em 0 1em;
+}
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses > section {
+    column-count: 2;
+    column-gap: 20px;
+  }
+  #authors-addresses > section > h2 {
+    column-span: all;
+  }
+  /* hack for break-inside: avoid-column */
+  #authors-addresses address {
+    display: inline-block;
+    break-inside: avoid-column;
+  }
+}
+
+.rfcEditorRemove p:first-of-type {
+  font-style: italic;
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+/* alternative layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+  }
+  #toc.active {
+      opacity: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 2px 0 2px 6px;
+    padding-right: 1em;
+    font-size: 18px;
+    line-height: 24px;
+    min-width: 190px;
+    text-align: right;
+    background-color: #444;
+    color: white;
+    cursor: pointer;
+  }
+  #toc h2::before { /* css hamburger */
+    float: right;
+    position: relative;
+    width: 1em;
+    height: 1px;
+    left: -164px;
+    margin: 8px 0 0 0;
+    background: white none repeat scroll 0 0;
+    box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+    content: "";
+  }
+  #toc nav {
+    display: none;
+    background-color: var(--background-color);
+    padding: 0.5em 1em 1em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    height: calc(100vh - 48px);
+    border-left: 1px solid #ddd;
+  }
+  #toc.active nav {
+    display: block;
+  }
+  /* Make the collapsed ToC header render white on gray also when it's a link */
+  #toc h2 a,
+  #toc h2 a:link,
+  #toc h2 a:focus,
+  #toc h2 a:hover,
+  #toc a.toplink,
+  #toc a.toplink:hover {
+    color: white;
+    background-color: #444;
+    text-decoration: none;
+  }
+  #toc a.toplink {
+    margin-top: 2px;
+  }
+}
+
+/* alternative layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+  }
+  #toc h2 {
+    margin: 0;
+    padding: 0.25em 1em 1em 0;
+  }
+  #toc nav {
+    display: block;
+    height: calc(90vh - 84px);
+    bottom: 0;
+    padding: 0.5em 0 2em;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+  }
+  #toc nav > ul  {
+    margin-bottom: 2em;
+  }
+  #toc ul {
+    margin: 0 0 0 4px;
+    font-size: var(--small-font-size);
+  }
+  #toc ul :is(p, li) {
+    margin: 2px 0;
+    line-height: 22px;
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc, #n-introduction {
+    page-break-before: always;
+  }
+  #toc {
+    border-top: none;
+    padding-top: 0;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+  .toplink {
+    display: none;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Changes introduced to fix issues found during implementation */
+
+/* Separate body from document info even without intervening H1 */
+section {
+  clear: both;
+}
+
+/* Top align author divs, to avoid names without organization dropping level with org names */
+.author {
+  vertical-align: top;
+}
+
+/* Style section numbers with more space between number and title */
+.section-number {
+  padding-right: 0.5em;
+}
+
+/* Add styling for a link in the ToC that points to the top of the document */
+a.toplink {
+  float: right;
+  margin: 8px 0.5em 0;
+}
+
+/* Provide styling for table cell text alignment */
+table .text-left {
+  text-align: left;
+}
+table .text-center {
+  text-align: center;
+}
+table .text-right {
+  text-align: right;
+}
+
+/* Make the alternative author contact information look less like just another
+   author, and group it closer with the primary author contact information */
+.alternative-contact {
+  margin: 0.5em 0 0.25em 0;
+}
+address .non-ascii {
+  margin: 0 0 0 2em;
+}
+
+/* With it being possible to set tables with alignment
+  left, center, and right, { width: 100%; } does not make sense */
+table {
+  width: auto;
+}
+
+/* Avoid reference text that sits in a block with very wide left margin,
+   because of a long floating dt label.*/
+.references dd {
+  overflow: visible;
+}
+
+/* Control caption placement */
+caption {
+  caption-side: bottom;
+}
+
+/* Limit the width of the author address vcard, so names in right-to-left
+   script don't end up on the other side of the page. */
+
+address.vcard {
+  max-width: 20em;
+  margin-right: auto;
+}
+
+/* For address alignment dependent on LTR or RTL scripts */
+address div.left {
+  text-align: left;
+}
+address div.right {
+  text-align: right;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg :is([stroke="black"], [stroke^="#000"]) {
+  stroke: var(--text-color);
+}
+svg :is([stroke="white"], [stroke^="#fff"]) {
+  stroke: var(--background-color);
+}
+svg :is([fill="black"], [fill^="#000"], :not([fill])) {
+  fill: var(--text-color);
+}
+svg :is([fill="white"], [fill^="#fff"]) {
+  fill: var(--background-color);
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">wpadng</td>
+<td class="right">July 2024</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Cohen</td>
+<td class="center">Expires 2 January 2025</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">intarea</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-joshco-sample-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2024-07-01" class="published">1 July 2024</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Informational</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2025-01-02">2 January 2025</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">J. Cohen</div>
+<div class="org">Self</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Sample</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">This specification aims to modernize Web Proxy Automatic Discovery (WPAD)
+which was defined in 1997.  At that time, the World Wide Web was much
+earlier in its evolution. Technologies such as DNS TEXT records, DHCP,
+and Service Location Protocol were still evolving and/or not widely deployed.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+<p id="section-abstract-2"><span>[<a href="#WPAD" class="cite xref">WPAD</a>]</span><a href="#section-abstract-2" class="pilcrow">¶</a></p>
+<p id="section-abstract-3">Web Proxy Automatic Discovery Next Generation (WPADNG) seeks to deprecate
+approaches which, at the time of WPAD, were short-term solutions
+such as DNS A, DNS TXT.<a href="#section-abstract-3" class="pilcrow">¶</a></p>
+<p id="section-abstract-4">In their place, WPADNG incorporates modern technologies such as
+DNS Service Discovery <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-abstract-4" class="pilcrow">¶</a></p>
+<p id="section-abstract-5">At the time of WPAD, the configuration foramt used was a Javascript snippet
+which Web Browsers, or in more recent times, a system service executed to
+determine the relevant proxy server for a given URL.<a href="#section-abstract-5" class="pilcrow">¶</a></p>
+<p id="section-abstract-6">In many cases, this is overkill.  In others, such as embedded Internet of Things (IoT),
+hosting a JavaScript engine and executing a script for every URL may not be feasible, or represent complexity and resource requirements that exceed the functionality
+of the device itself.<a href="#section-abstract-6" class="pilcrow">¶</a></p>
+<p id="section-abstract-7">In that spirit, WPADNG will document how other, modern formats are used
+with discovery mechanisms.  An example is "Communicating Proxy Configurations in Provisioning Domains", a draft currently being developed.<a href="#section-abstract-7" class="pilcrow">¶</a></p>
+<p id="section-abstract-8">WPADNG is a work in progress starting with draft-wrec-wpad-01 as a baseline
+and updating its sections based on feedback from the IETF community.<a href="#section-abstract-8" class="pilcrow">¶</a></p>
+<p id="section-abstract-9">This version of the specification makes the following changes:<a href="#section-abstract-9" class="pilcrow">¶</a></p>
+<p id="section-abstract-10">Deprecations/Removals<a href="#section-abstract-10" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-abstract-11.1">
+          <p id="section-abstract-11.1.1">Deprecate DNS A record discovery aka "Well known aliases"<a href="#section-abstract-11.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-abstract-11.2">
+          <p id="section-abstract-11.2.1">Deprecate DNS TXT record discovery<a href="#section-abstract-11.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-abstract-11.3">
+          <p id="section-abstract-11.3.1">Deprecate SLP/SRV discoery<a href="#section-abstract-11.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-abstract-11.4">
+          <p id="section-abstract-11.4.1">Remove the prohibition of DNSSRV fallback since DNS A is being deprecated<a href="#section-abstract-11.4.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-abstract-11.5">
+          <p id="section-abstract-11.5.1">Remove Conditional Compliance section<a href="#section-abstract-11.5.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-abstract-12">Additions
+* DNS-SD Discovery Mechanism
+* Content type negotation to support PVD<a href="#section-abstract-12" class="pilcrow">¶</a></p>
+<p id="section-abstract-13">Open Issues:
+* Should TGTDOM iteration aka "DNS devolution" remain ?<a href="#section-abstract-13" class="pilcrow">¶</a></p>
+<p id="section-abstract-14">The original introduction follows:<a href="#section-abstract-14" class="pilcrow">¶</a></p>
+<p id="section-abstract-15">A mechanism is needed to permit web clients to locate nearby web
+proxy caches. Current best practice is for end users to hand
+configure their web client (i.e., browser) with the URL of an "auto
+configuration file". In large environments this presents a
+formidable support problem.  It would be much more manageable for
+the web client software to automatically learn the configuration
+information for its web proxy settings. This is typically referred
+to as a resource discovery problem.<a href="#section-abstract-15" class="pilcrow">¶</a></p>
+<p id="section-abstract-16">Web client implementers are faced with a dizzying array of resource
+discovery protocols at varying levels of implementation and
+deployment. This complexity is hampering deployment of a "web proxy
+auto-discovery "facility.  This document proposes a pragmatic
+approach to web proxy auto-discovery.  It draws on a number of
+proposed standards in the light of practical deployment concerns. It
+proposes an escalating strategy of resource discovery attempts in
+order to find a nearby web proxy server. It attempts to provide rich
+mechanisms for supporting a complex environment, which may contain
+multiple web proxy servers.<a href="#section-abstract-16" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-discussion-venues">
+<a href="#name-discussion-venues" class="section-name selfRef">Discussion Venues</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">Source for this draft and an issue tracker can be found at
+    <span><a href="https://github.com/joshco/wpadng">https://github.com/joshco/wpadng</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 2 January 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2024 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-defining-web-proxy-auto-dis" class="internal xref">Defining Web Proxy Auto-Discovery</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-the-discovery-process" class="internal xref">The Discovery Process</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1" class="keepWithNext"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-wpad-overview" class="internal xref">WPAD Overview</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
+                <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-when-to-execute-wpad" class="internal xref">When to Execute WPAD</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2.2.1">
+                    <p id="section-toc.1-1.3.2.2.2.1.1"><a href="#section-3.2.1" class="auto internal xref">3.2.1</a>.  <a href="#name-upon-startup-of-the-web-cli" class="internal xref">Upon Startup of the Web Client</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2.2.2">
+                    <p id="section-toc.1-1.3.2.2.2.2.1"><a href="#section-3.2.2" class="auto internal xref">3.2.2</a>.  <a href="#name-network-stack-events" class="internal xref">Network Stack Events</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2.2.3">
+                    <p id="section-toc.1-1.3.2.2.2.3.1"><a href="#section-3.2.3" class="auto internal xref">3.2.3</a>.  <a href="#name-expiration-of-the-cfile" class="internal xref">Expiration of the CFILE</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.3">
+                <p id="section-toc.1-1.3.2.3.1"><a href="#section-3.3" class="auto internal xref">3.3</a>.  <a href="#name-wpad-protocol-specification" class="internal xref">WPAD Protocol Specification</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4">
+                <p id="section-toc.1-1.3.2.4.1"><a href="#section-3.4" class="auto internal xref">3.4</a>.  <a href="#name-discovery-mechanisms" class="internal xref">Discovery Mechanisms</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.1">
+                    <p id="section-toc.1-1.3.2.4.2.1.1"><a href="#section-3.4.1" class="auto internal xref">3.4.1</a>.  <a href="#name-dhcp" class="internal xref">DHCP</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.2">
+                    <p id="section-toc.1-1.3.2.4.2.2.1"><a href="#section-3.4.2" class="auto internal xref">3.4.2</a>.  <a href="#name-dns-serice-discovery-dns-sd" class="internal xref">DNS Serice Discovery (DNS-SD)</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.3">
+                    <p id="section-toc.1-1.3.2.4.2.3.1"><a href="#section-3.4.3" class="auto internal xref">3.4.3</a>.  <a href="#name-ptr-record-definition" class="internal xref">PTR Record Definition</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.4">
+                    <p id="section-toc.1-1.3.2.4.2.4.1"><a href="#section-3.4.4" class="auto internal xref">3.4.4</a>.  <a href="#name-txt-record-definition" class="internal xref">TXT Record Definition</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.5">
+                    <p id="section-toc.1-1.3.2.4.2.5.1"><a href="#section-3.4.5" class="auto internal xref">3.4.5</a>.  <a href="#name-srv-record-definition" class="internal xref">SRV Record Definition</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.6">
+                    <p id="section-toc.1-1.3.2.4.2.6.1"><a href="#section-3.4.6" class="auto internal xref">3.4.6</a>.  <a href="#name-dnssd-client-behavior" class="internal xref">DNSSD Client behavior</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.4.2.7">
+                    <p id="section-toc.1-1.3.2.4.2.7.1"><a href="#section-3.4.7" class="auto internal xref">3.4.7</a>.  <a href="#name-timeouts" class="internal xref">Timeouts</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.5">
+                <p id="section-toc.1-1.3.2.5.1"><a href="#section-3.5" class="auto internal xref">3.5</a>.  <a href="#name-composing-a-candidate-curl" class="internal xref">Composing a Candidate CURL</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.6">
+                <p id="section-toc.1-1.3.2.6.1"><a href="#section-3.6" class="auto internal xref">3.6</a>.  <a href="#name-retrieving-the-cfile-at-the" class="internal xref">Retrieving the CFILE at the CURL</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.6.2.1">
+                    <p id="section-toc.1-1.3.2.6.2.1.1"><a href="#section-3.6.1" class="auto internal xref">3.6.1</a>.  <a href="#name-content-negotation-for-pvd" class="internal xref">Content Negotation for PVD</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.7">
+                <p id="section-toc.1-1.3.2.7.1"><a href="#section-3.7" class="auto internal xref">3.7</a>.  <a href="#name-resuming-discovery" class="internal xref">Resuming Discovery</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-client-implementation-consi" class="internal xref">Client Implementation Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-proxy-server-considerations" class="internal xref">Proxy Server Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-administrator-consideration" class="internal xref">Administrator Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#section-9" class="auto internal xref">9</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#section-10" class="auto internal xref">10</a>. <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.1">
+                <p id="section-toc.1-1.11.2.1.1"><a href="#appendix-A.1" class="auto internal xref">A.1</a>.  <a href="#name-acknowledgements-for-curren" class="internal xref">Acknowledgements for current versions</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11.2.2">
+                <p id="section-toc.1-1.11.2.2.1"><a href="#appendix-A.2" class="auto internal xref">A.2</a>.  <a href="#name-acknowledgements-from-previ" class="internal xref">Acknowledgements from previous versions</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-B" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="introduction">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">The problem of locating nearby web proxy cache servers can not wait
+for the implementation and large scale deployment of various<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">upcoming resource discovery protocols. The widespread success of the
+HTTP protocol and the recent popularity of streaming media has
+placed unanticipated strains on the networks of corporations, ISPs
+and backbone providers. There currently is no effective method for
+these organizations to realize the obvious benefits of web caching
+without tedious and error prone configuration by each and every end
+user.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">The de-facto mechanism for specifying a web proxy server
+configuration in web clients is the download of a script or
+configuration file named by a URL. Users are currently expected to
+hand configure this URL into their Browser or other web client.
+This mechanism suffers from a number of drawbacks:<a href="#section-1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-4.1">
+          <p id="section-1-4.1.1">Difficulty in supporting a large body of end-users. Many users
+misconfigure their proxy settings and are unable to diagnose the
+cause of their problems.<a href="#section-1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-4.2">
+          <p id="section-1-4.2.1">Lack of support for mobile clients who require a different proxy
+as their point of access changes.<a href="#section-1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-4.3">
+          <p id="section-1-4.3.1">Lack of support for complex proxy environments where there may
+exist a number of proxy servers with different affinities for
+different clients (based on network proximity, for example).
+Currently, clients would have to "know" which proxy server was
+optimal for their use.<a href="#section-1-4.3.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-1-5">Currently available methods for resource discovery need to be
+exploited in the context of a well defined framework. Simple,
+functional and efficient mechanisms stand a good chance of solving
+this pressing and basic need. As new resource discovery mechanisms
+mature they can be folded into this framework with little
+difficulty.<a href="#section-1-5" class="pilcrow">¶</a></p>
+<p id="section-1-6">This document is a specification for implementers of web client
+software. It defines a protocol for automatically configuring those
+clients to use a local proxy. It also defines how an administrator
+should configure various resource discovery services in their
+network to support WPAD compatible web clients.<a href="#section-1-6" class="pilcrow">¶</a></p>
+<p id="section-1-7">While it does contain suggestions for web proxy server implementers,
+it does not make any specific demands of those parties.<a href="#section-1-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="defining-web-proxy-auto-discovery">
+<section id="section-2">
+      <h2 id="name-defining-web-proxy-auto-dis">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-defining-web-proxy-auto-dis" class="section-name selfRef">Defining Web Proxy Auto-Discovery</a>
+      </h2>
+<p id="section-2-1">As mentioned above, currently web client software needs to be
+configured with the URL of a proxy auto-configuration file or
+script. The contents of this script are vendor specific and not
+currently standardized. This document does not attempt to discuss
+the contents of these files (see REF8 for an example file format).<a href="#section-2-1" class="pilcrow">¶</a></p>
+<p id="section-2-2">Thus, the Web Proxy Auto-Discovery (WPAD) problem reduces to
+providing the web client a mechanism for discovering the URL of the<a href="#section-2-2" class="pilcrow">¶</a></p>
+<p id="section-2-3">Configuration File. Once this Configuration URL (CURL) is known, the
+client software already contains mechanisms for retrieving and
+interpreting the Configuration File (CFILE) to enable access to the
+specified proxy cache servers.<a href="#section-2-3" class="pilcrow">¶</a></p>
+<p id="section-2-4">It is worth carefully noting that the goal of the WPAD process is to
+discover the correct CURL at which to retrieve the CFILE. The client
+is <em>not</em> trying to directly discover the name of the proxy server.
+That would circumvent the additional capabilities provided by proxy
+Configuration Files (such as load balancing, request routing to an
+array of servers, automated fail-over to backup proxy server REF6,8).<a href="#section-2-4" class="pilcrow">¶</a></p>
+<p id="section-2-5">It is worth noting that different clients requesting the CURL may
+receive completely different CFILEs in response. The web server may
+send back different CFILES based on a number of criteria such as the
+"User-Agent" header, "Accept" headers, client IP address/subnet,
+etc.  The same client could conceivably receive a different CFILE on
+successive retrievals (as a method of round-robin load balancing,
+for example).<a href="#section-2-5" class="pilcrow">¶</a></p>
+<p id="section-2-6">This document will discuss a range of mechanisms for discovering the
+Configuration URL. The client will attempt them in a predefined
+order, until one succeeds. Existing widely deployed facilities may
+not provide enough expressiveness to specify a complete URL. As
+such, we will define default values for portions of the CURL which
+may not be expressible by some discovery mechanisms:<a href="#section-2-6" class="pilcrow">¶</a></p>
+<p id="section-2-7">http://HOST:PORT/PATH<a href="#section-2-7" class="pilcrow">¶</a></p>
+<p id="section-2-8">HOST - There is no default for this potion. Any succeeding
+    discovery mechanism will provide a value for the HOST portion
+    of the CURL. The client <span class="bcp14">MUST NOT</span> provide a default.<a href="#section-2-8" class="pilcrow">¶</a></p>
+<p id="section-2-9">PORT - The client <span class="bcp14">MUST</span> assume port 80 if the successful discovery
+    mechanism does not provide a port component.<a href="#section-2-9" class="pilcrow">¶</a></p>
+<p id="section-2-10">PATH - The client <span class="bcp14">MUST</span> assume a path of "/wpad.dat" if the
+    successful discovery mechanism does not provide a path
+    component.<a href="#section-2-10" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="the-discovery-process">
+<section id="section-3">
+      <h2 id="name-the-discovery-process">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-the-discovery-process" class="section-name selfRef">The Discovery Process</a>
+      </h2>
+<div id="wpad-overview">
+<section id="section-3.1">
+        <h3 id="name-wpad-overview">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-wpad-overview" class="section-name selfRef">WPAD Overview</a>
+        </h3>
+<p id="section-3.1-1">This sub-section will present a descriptive overview of the WPAD
+protocol. It is intended to introduce the concepts and flow of the
+protocol. The remaining sub-sections (3.2-3.7) will provide the
+rigorous specification of the protocol details. WPAD uses a
+collection of pre-existing Internet resource discovery mechanisms to
+perform web proxy auto-discovery. Readers may wish to refer to REF1
+for a similar approach to resource discovery, since it was a basis
+for this strategy.  The WPAD protocol specifies the following:<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-2.1">
+            <p id="section-3.1-2.1.1">how to use each mechanism for the specific purpose of web proxy
+  auto-discovery<a href="#section-3.1-2.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.2">
+            <p id="section-3.1-2.2.1">the order in which the mechanisms should be performed<a href="#section-3.1-2.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-2.3">
+            <p id="section-3.1-2.3.1">the minimal set of mechanisms which must be attempted by a WPAD
+  compliant web client<a href="#section-3.1-2.3.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.1-3">The resource discovery mechanisms utilized by WPAD are as follows.
+- Dynamic Host Configuration Protocol (DHCP, REF3,7).
+- Service Location Protocol (SLP, REF4).
+- "Well Known Aliases” using DNS A records REF5,9.
+- DNS SRV records REF2,9.
+- "service: URLs" in DNS TXT records REF10.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.1-4">Of all these mechanisms only the DHCP and “Well Known Aliases” are
+required in WPAD clients. This decision is based on three reasons:
+these facilities are currently widely deployed in existing vendor
+hardware and software; they represent functionality that should
+cover most real world environments; they are relatively simple to
+implement.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
+<p id="section-3.1-5">DNS servers supporting A records are clearly the most widely
+deployed of the services outlined above. It is reasonable to expect
+API support inside most web client development environments (POSIX
+C, Java, etc). The hierarchical nature of DNS makes it possible to
+support hierarchies of proxy servers.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
+<p id="section-3.1-6">DNS is not suitable in every environment, unfortunately.
+Administrators often choose a DNS domain name hierarchy that does
+not correlate to network topologies, but rather with some
+organizational model (for example, foo.development.bar.com and
+foo.marketing.bar.com). DHCP servers, on the other hand, are
+frequently deployed with concern for network topologies. DHCP
+servers provide support for making configuration decisions based on
+subnets, which are directly related to network topology.<a href="#section-3.1-6" class="pilcrow">¶</a></p>
+<p id="section-3.1-7">Full client support for DHCP is not as ubiquitous as for DNS. That
+is, not all clients are equipped to take advantage of DHCP for their
+essential network configuration (assignment of IP address, network
+mask, etc). APIs for DHCP are not as widely available. Luckily,
+using DHCP for WPAD does not require either of these facilities. It
+is relatively easy for web client developers to speak just the
+minimal DHCP protocol to perform resource discovery. It entails
+building a simple UDP packet, sending it to the subnet broadcast
+address, and parsing the reply UDP packet(s) which are received to
+extract the WPAD option field. A reference implementation of this
+code in C is available REF11.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
+<p id="section-3.1-8">The WPAD client attempts a series of resource discovery requests,
+using the discovery mechanisms mentioned above, in a specific order.
+Clients only attempt mechanisms that they support (obviously). Each
+time the discovery attempt succeeds; the client uses the information
+obtained to construct a CURL. If a CFILE is successfully retrieved<a href="#section-3.1-8" class="pilcrow">¶</a></p>
+<p id="section-3.1-9">at that CURL, the process completes. If not, the client resumes
+where it left of in the predefined series of resource discovery
+requests. If no untried mechanisms remain and a CFILE has not been
+successfully retrieved, the WPAD protocol fails and the client is
+configured to use no proxy server.<a href="#section-3.1-9" class="pilcrow">¶</a></p>
+<p id="section-3.1-10">First the client tries DHCP, followed by SLP. If no CFILE has been
+retrieved the client moves on to the DNS based mechanisms. The
+client will cycle through the DNS SRV, “Well Known Aliases” and DNS
+TXT record methods multiple times. Each time through the QNAME being
+used in the DNS query is made less and less specific. In this manner
+the client can locate the most specific configuration information
+possible, but can fall back on less specific information. Every DNS
+lookup has the QNAME prefixed with “wpad” to indicate the resource
+type being requested.<a href="#section-3.1-10" class="pilcrow">¶</a></p>
+<p id="section-3.1-11">As an example, consider a client with hostname johns-
+desktop.development.foo.com. Assume the web client software supports
+all of the mechanisms listed above. This is the sequence of
+discovery attempts the client would perform until one succeeded in
+locating a valid CFILE:<a href="#section-3.1-11" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-12.1">
+            <p id="section-3.1-12.1.1">DHCP<a href="#section-3.1-12.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.2">
+            <p id="section-3.1-12.2.1">SLP<a href="#section-3.1-12.2.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.3">
+            <p id="section-3.1-12.3.1">DNS A lookup on QNAME=wpad.development.foo.com.<a href="#section-3.1-12.3.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.4">
+            <p id="section-3.1-12.4.1">DNS SRV lookup on QNAME=wpad.development.foo.com.<a href="#section-3.1-12.4.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.5">
+            <p id="section-3.1-12.5.1">DNS TXT lookup on QNAME=wpad.development.foo.com.<a href="#section-3.1-12.5.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.6">
+            <p id="section-3.1-12.6.1">DBS A lookup on QNAME=wpad.foo.com.<a href="#section-3.1-12.6.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.7">
+            <p id="section-3.1-12.7.1">DNS SRV lookup on QNAME=wpad.foo.com.<a href="#section-3.1-12.7.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-12.8">
+            <p id="section-3.1-12.8.1">DNS TXT lookup on QNAME=wpad.foo.com.<a href="#section-3.1-12.8.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+</section>
+</div>
+<div id="when-to-execute-wpad">
+<section id="section-3.2">
+        <h3 id="name-when-to-execute-wpad">
+<a href="#section-3.2" class="section-number selfRef">3.2. </a><a href="#name-when-to-execute-wpad" class="section-name selfRef">When to Execute WPAD</a>
+        </h3>
+<p id="section-3.2-1">Web clients need to perform the WPAD protocol periodically to
+maintain correct proxy settings. This should occur on a regular
+basis corresponding to initialization of the client software or the
+networking stack below the client. As well, WPAD will need to occur
+in response to expiration of existing configuration data.  The
+following sections describe the details of these scenarios.  3.2.1.
+Periodic Discovery<a href="#section-3.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.2-2">The web proxy auto-discovery process <span class="bcp14">MUST</span> occur at least as
+frequently as one of the following two options. A web client can use
+either option depending on which makes sense in their environment.
+Clients <span class="bcp14">MUST</span> use at least one of the following options. They <span class="bcp14">MAY</span>
+also choose to implement both options.
+- Upon startup of the web client.
+- Whenever there indication from the networking stack that the  IP
+address of the client host either has, or could have, changed.<a href="#section-3.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.2-3">In addition, the client <span class="bcp14">MUST</span> attempt a discovery cycle upon
+expiration of a previously downloaded CFILE in accordance with
+HTTP/1.1.<a href="#section-3.2-3" class="pilcrow">¶</a></p>
+<div id="upon-startup-of-the-web-client">
+<section id="section-3.2.1">
+          <h4 id="name-upon-startup-of-the-web-cli">
+<a href="#section-3.2.1" class="section-number selfRef">3.2.1. </a><a href="#name-upon-startup-of-the-web-cli" class="section-name selfRef">Upon Startup of the Web Client</a>
+          </h4>
+<p id="section-3.2.1-1">For many types of web client (like web browsers) there can be many
+instances of the client operating for a given user at one time. This
+is often to allow display of multiple web pages in different
+windows, for example. There is no need to re-perform WPAD every time
+a new instance of the web client is opened. WPAD <span class="bcp14">MUST</span> be performed
+when the number of web client instances transitions from 0 to 1. It
+<span class="bcp14">SHOULD NOT</span> be performed as additional instances are created.<a href="#section-3.2.1-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="network-stack-events">
+<section id="section-3.2.2">
+          <h4 id="name-network-stack-events">
+<a href="#section-3.2.2" class="section-number selfRef">3.2.2. </a><a href="#name-network-stack-events" class="section-name selfRef">Network Stack Events</a>
+          </h4>
+<p id="section-3.2.2-1">Another option for clients is to tie the execution of WPAD to
+changes in the networking environment. If the client can learn about
+the change of the local host’s IP address, or the possible change of
+the IP address, it <span class="bcp14">MUST</span> re-perform the WPAD protocol.  Many
+operating systems provide indications of “network up” events, for
+example. Those types of events and system-boot events might be the
+triggers for WPAD in many environments.<a href="#section-3.2.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="expiration-of-the-cfile">
+<section id="section-3.2.3">
+          <h4 id="name-expiration-of-the-cfile">
+<a href="#section-3.2.3" class="section-number selfRef">3.2.3. </a><a href="#name-expiration-of-the-cfile" class="section-name selfRef">Expiration of the CFILE</a>
+          </h4>
+<p id="section-3.2.3-1">The HTTP retrieval of the CURL may return HTTP headers specifying a
+valid lifetime for the CFILE returned. The client <span class="bcp14">MUST</span> obey these
+timeouts and rerun the PAD process when it expires. A client <span class="bcp14">MAY</span>
+rerun the WPAD process if it detects a failure of the currently
+configured proxy (which is not otherwise recoverable via the
+inherent mechanisms provided by the currently active Configuration
+File).<a href="#section-3.2.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.2.3-2">Whenever the client decides to invalidate the current CURL or CFILE,
+it <span class="bcp14">MUST</span> rerun the entire WPAD protocol to ensure it discovers the
+currently correct CURL. Specifically, if the valid lifetime of the
+CFILE ends(as specified by the HTTP headers provided when it was
+retrieved),the complete WPAD protocol <span class="bcp14">MUST</span> be rerun. The client <span class="bcp14">MUST NOT</span> simply re-use the existing CURL to obtain a fresh copy of the
+CFILE.<a href="#section-3.2.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.2.3-3">A number of network round trips, broadcast and/or multicast
+communications may be required during the WPAD protocol. The WPAD
+protocol <span class="bcp14">SHOULD NOT</span> be invoked at a more frequent rate than
+specified above (such as per-URL retrieval).<a href="#section-3.2.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="wpad-protocol-specification">
+<section id="section-3.3">
+        <h3 id="name-wpad-protocol-specification">
+<a href="#section-3.3" class="section-number selfRef">3.3. </a><a href="#name-wpad-protocol-specification" class="section-name selfRef">WPAD Protocol Specification</a>
+        </h3>
+<p id="section-3.3-1">The following pseudo-code defines the WPAD protocol.  If a
+particular discovery mechanism is not supported, treat it as a
+failed discovery attempt in the pseudo-code.<a href="#section-3.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.3-2">In addition, this logic is expressed below in pseudo-code.
+The following pseudo-code fragment defines WPAD.  Unsupported
+discovery mechanisms are treated as failure in the pseudo-code.<a href="#section-3.3-2" class="pilcrow">¶</a></p>
+<p id="section-3.3-3">Two subroutines need explanation. The subroutine
+strip_leading_component(dns_string) strips off the leading
+characters, up to and including the first dot (`.') in the string
+which is passed as a parameter, and is expected to contain DNS name.
+The Boolean subroutine is_not_canonical(dns_string) returns FALSE if
+dns_string is one of the canonical domain suffixes defined in RFC
+1591 REF13 (for example, "com").<a href="#section-3.3-3" class="pilcrow">¶</a></p>
+<p id="section-3.3-4">The slp_list and dns_list elements below are assumed to be linked
+lists containing a data field and a pointer to the next element.
+The data field contains the elements used to override the default
+values in creating a CURL, as detailed in section 3.5.<a href="#section-3.3-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.3-5">
+<pre>
+load_CFILE() {
+/* MUST use DHCP */
+curl = dhcp_query(/*WPAD option  (section 4.4.1) */);
+if (curl != null) {  /* DHCP succeeded */
+    if isvalid (read_CFILE(curl))
+        return SUCCESS;  /* valid CFILE */
+}
+
+/* Should use SLP */
+slp_list = slp_query(/*(WPAD attributes  (Section 4.4.2)*/));
+while (slp_list != null) {  /* test each curl  */
+    if isvalid(read_CFILE(slp_list.curl_data))
+        return SUCCESS;   /* valid CFILE */
+    else
+        slp_list = slp_list.next;
+}
+
+/* all the DNS mechanisms */
+TGTDOM = gethostbyname(me);
+TGTDOM = strip_leading_component(TGTDOM);
+
+while (is_not_canonical(TGTDOM)) {
+
+    /* SHOULD try DNS SRV records */
+    dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                                QTYPE=SRV (section 4.4.4)*/);
+    while (dns_list != null) { /* each TXT record */
+        if isvalid(read_CFILE(dns_list, curl_data))
+            return SUCCESS;   /* valid CFILE */
+        else
+            dns_list = dns_list.next;
+    }
+
+    /* SHOULD try DNS TXT records */
+    dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                                QTYPE=TXT (section 4.4.5)*/);
+    while (dns_list != null) { /* each TXT record */
+        if isvalid(read_CFILE(dns_list, curl_data))
+            return SUCCESS;   /* valid CFILE */
+        else
+            dns_list = dns_list.next;
+    }
+
+    /* MUST try DNS A records */
+    dns_list = dns_query(/*QNAME=wpad.TGTDOM.,
+                            QTYPE=A  (Section 4.4.3)*/);
+
+    while (dns_list != null) { /* check each A record */
+        if isvalid(read_CFILE(dns_list, curl_data))
+            return SUCCESS;   /* valid CFILE */
+        else
+            dns_list = dns_list.next;
+    }
+
+
+    /* Still no match, remove leading component and iterate */
+    TGTDOM = strip_leading_component(TGTDOM);
+
+} /* no A, TXT or SRV records for wpad.* */
+
+return FAILED;  /* could not locate valid CFILE */
+}
+</pre><a href="#section-3.3-5" class="pilcrow">¶</a>
+</div>
+</section>
+</div>
+<div id="discovery-mechanisms">
+<section id="section-3.4">
+        <h3 id="name-discovery-mechanisms">
+<a href="#section-3.4" class="section-number selfRef">3.4. </a><a href="#name-discovery-mechanisms" class="section-name selfRef">Discovery Mechanisms</a>
+        </h3>
+<p id="section-3.4-1">Each of the resource discovery methods will be marked as to whether
+the client <span class="bcp14">MUST</span>, <span class="bcp14">SHOULD</span>, <span class="bcp14">MAY</span>, or <span class="bcp14">MUST NOT</span> implement them to be
+compliant. Client implementers are encouraged to implement as many
+mechanisms as possible, to promote maximum interoperability.<a href="#section-3.4-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Discovery Mechanism</th>
+              <th class="text-left" rowspan="1" colspan="1">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DHCP</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">MUST</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">DNS-SD</td>
+              <td class="text-left" rowspan="1" colspan="1">
+                <span class="bcp14">SHOULD</span>
+</td>
+            </tr>
+          </tbody>
+        </table>
+<p id="section-3.4-3">SUMMARY OF DISCOVERY MECHANISMS<a href="#section-3.4-3" class="pilcrow">¶</a></p>
+<div id="dhcp">
+<section id="section-3.4.1">
+          <h4 id="name-dhcp">
+<a href="#section-3.4.1" class="section-number selfRef">3.4.1. </a><a href="#name-dhcp" class="section-name selfRef">DHCP</a>
+          </h4>
+<p id="section-3.4.1-1">Client implementations <span class="bcp14">MUST</span> support DHCP. DHCP has widespread
+support innumerous vendor hardware and software implementations, and
+is widely deployed. It is also perfectly suited to this task, and is
+used to discover other network resources (such a time servers,
+printers, etc). The DHCP protocol is detailed in <span>[<a href="#DHCP" class="cite xref">DHCP</a>]</span>.
+We propose a new DHCP option with code 252 for use in web proxy
+auto-discovery. See RFC 2132 REF7 for a list of existing DHCP
+options. See "Conditional Compliance" for more information on DHCP
+requirements.<a href="#section-3.4.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-2">The client should obtain the value of the DHCP option code 252 as
+returned by the DHCP server. If the client has already conducted
+DHCP protocol during its initialization, the DHCP server may already
+have supplied that value. If the value is not available through a
+client OS API, the client <span class="bcp14">SHOULD</span> use a DHCPINFORM message to query
+the DHCP server to obtain the value.<a href="#section-3.4.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-3">The DHCP option code for WPAD is 252 by agreement of the DHC working
+group chair.  This option is of type STRING.  This string contains a
+URL which points to an appropriate config file.  The STRING is of
+arbitrary size.<a href="#section-3.4.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.4.1-4">An example STRING value would be:
+"http://server.domain/proxyconfig.pac"<a href="#section-3.4.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dns-serice-discovery-dns-sd">
+<section id="section-3.4.2">
+          <h4 id="name-dns-serice-discovery-dns-sd">
+<a href="#section-3.4.2" class="section-number selfRef">3.4.2. </a><a href="#name-dns-serice-discovery-dns-sd" class="section-name selfRef">DNS Serice Discovery (DNS-SD)</a>
+          </h4>
+<p id="section-3.4.2-1">Client implementations <span class="bcp14">MUST</span> support <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span> discovery of
+proxy configuration files.  To suport this, a DNS server advertising
+WPADNG will have the following resource records:<a href="#section-3.4.2-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.2-2"><span class="bcp14">SHOULD</span> advertise PTR records which may return multiple advertised service instances
+or a single instance.<a href="#section-3.4.2-2" class="pilcrow">¶</a></p>
+<p id="section-3.4.2-3"><span class="bcp14">MUST</span> advertise TXT records conformant with <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-3.4.2-3" class="pilcrow">¶</a></p>
+<p id="section-3.4.2-4"><span class="bcp14">SHOULD</span> advertise SRV records conformant with <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span><a href="#section-3.4.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="ptr-record-definition">
+<section id="section-3.4.3">
+          <h4 id="name-ptr-record-definition">
+<a href="#section-3.4.3" class="section-number selfRef">3.4.3. </a><a href="#name-ptr-record-definition" class="section-name selfRef">PTR Record Definition</a>
+          </h4>
+<p id="section-3.4.3-1">For example purposes, we assume a client has attached to the
+enterprise network at Example Coporation, which uses the dommain <code>example.org</code><a href="#section-3.4.3-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.3-2">WPADNG PTR records should have the following naming scheme:<a href="#section-3.4.3-2" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.4.3-3">
+<pre>
+_wpadng._tcp.example.org
+</pre><a href="#section-3.4.3-3" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.3-4">When a client queries for the PTR record, the DNS server replies
+will contain zero, one or more responses.  These responses contain WPADNG
+instance names, and priorities.<a href="#section-3.4.3-4" class="pilcrow">¶</a></p>
+<table class="center" id="table-2">
+            <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Instance Name</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">primary._wpadng._tcp.example.org</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">secondary._wpadng._tcp.example.org</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">_wpadng._tcp.example.org</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-3.4.3-6">In the above example. the enterprise advertises instance names for proxy servers
+  This allows an enterprise to provide redundancy and failover.<a href="#section-3.4.3-6" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="txt-record-definition">
+<section id="section-3.4.4">
+          <h4 id="name-txt-record-definition">
+<a href="#section-3.4.4" class="section-number selfRef">3.4.4. </a><a href="#name-txt-record-definition" class="section-name selfRef">TXT Record Definition</a>
+          </h4>
+<p id="section-3.4.4-1">WPADNG DNS TXT records <span class="bcp14">MUST</span> have the following format<a href="#section-3.4.4-1" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.4.4-2">
+<pre>
+txtvers=1
+url=CURL
+</pre><a href="#section-3.4.4-2" class="pilcrow">¶</a>
+</div>
+<p id="section-3.4.4-3">The CURL value is the URL to retrieve a Proxy Configuration FIle.<a href="#section-3.4.4-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="srv-record-definition">
+<section id="section-3.4.5">
+          <h4 id="name-srv-record-definition">
+<a href="#section-3.4.5" class="section-number selfRef">3.4.5. </a><a href="#name-srv-record-definition" class="section-name selfRef">SRV Record Definition</a>
+          </h4>
+<p id="section-3.4.5-1">WPADNG DNS SRV records <span class="bcp14">MUST</span> be formatted according to <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span>.  If mulitple SRV records are returned in response to a query, the client should select a record according to the weight and priority rules laid out in the <span>[<a href="#DNSSRV" class="cite xref">DNSSRV</a>]</span> specification.<a href="#section-3.4.5-1" class="pilcrow">¶</a></p>
+<p id="section-3.4.5-2">When using SRV records, only a HOST and PORT are returned.  As a result the client <span class="bcp14">MUST</span> follow the rules in Composing Candidate URL.  In practice, that means appending "/wpad.dat"<a href="#section-3.4.5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="dnssd-client-behavior">
+<section id="section-3.4.6">
+          <h4 id="name-dnssd-client-behavior">
+<a href="#section-3.4.6" class="section-number selfRef">3.4.6. </a><a href="#name-dnssd-client-behavior" class="section-name selfRef">DNSSD Client behavior</a>
+          </h4>
+<p id="section-3.4.6-1">When attempting to discover web proxy servers via <span>[<a href="#DNSSD" class="cite xref">DNSSD</a>]</span>, the following sequence should be used:<a href="#section-3.4.6-1" class="pilcrow">¶</a></p>
+<ol start="1" type="1" class="normal type-1" id="section-3.4.6-2">
+<li id="section-3.4.6-2.1">
+              <p id="section-3.4.6-2.1.1">Query PTR records<a href="#section-3.4.6-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li id="section-3.4.6-2.2">
+              <p id="section-3.4.6-2.2.1">Query TXT and SRV records<a href="#section-3.4.6-2.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li id="section-3.4.6-2.3">
+              <p id="section-3.4.6-2.3.1">Compose Candidate URL<a href="#section-3.4.6-2.3.1" class="pilcrow">¶</a></p>
+</li>
+            <li id="section-3.4.6-2.4">
+              <p id="section-3.4.6-2.4.1">Retreive configuration file<a href="#section-3.4.6-2.4.1" class="pilcrow">¶</a></p>
+</li>
+          </ol>
+</section>
+</div>
+<div id="timeouts">
+<section id="section-3.4.7">
+          <h4 id="name-timeouts">
+<a href="#section-3.4.7" class="section-number selfRef">3.4.7. </a><a href="#name-timeouts" class="section-name selfRef">Timeouts</a>
+          </h4>
+<p id="section-3.4.7-1">Implementers are encouraged to limit the time elapsed in each
+discovery phase.  When possible, limiting each phase to 10 seconds
+is considered reasonable.  Implementers may choose a different value
+which is more appropriate to their network properties.  For example,
+a device implementation, which operated over a wireless network, may
+use a much larger timeout to account for low bandwidth or high
+latency.<a href="#section-3.4.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="composing-a-candidate-curl">
+<section id="section-3.5">
+        <h3 id="name-composing-a-candidate-curl">
+<a href="#section-3.5" class="section-number selfRef">3.5. </a><a href="#name-composing-a-candidate-curl" class="section-name selfRef">Composing a Candidate CURL</a>
+        </h3>
+<p id="section-3.5-1">Any successful discovery mechanism response will provide a
+HOST(perhaps in the form of an IP address). Some mechanisms will
+also provide a PORT and/or a PATH. The client should override
+the default CURL fields with all of those supplied by the discovery
+mechanism.<a href="#section-3.5-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="retrieving-the-cfile-at-the-curl">
+<section id="section-3.6">
+        <h3 id="name-retrieving-the-cfile-at-the">
+<a href="#section-3.6" class="section-number selfRef">3.6. </a><a href="#name-retrieving-the-cfile-at-the" class="section-name selfRef">Retrieving the CFILE at the CURL</a>
+        </h3>
+<p id="section-3.6-1">The client then requests the CURL via HTTP.<a href="#section-3.6-1" class="pilcrow">¶</a></p>
+<div id="content-negotation-for-pvd">
+<section id="section-3.6.1">
+          <h4 id="name-content-negotation-for-pvd">
+<a href="#section-3.6.1" class="section-number selfRef">3.6.1. </a><a href="#name-content-negotation-for-pvd" class="section-name selfRef">Content Negotation for PVD</a>
+          </h4>
+<p id="section-3.6.1-1">When making the request it <span class="bcp14">MUST</span> transmit HTTP "Accept" headers
+indicating what CFILE formats it is capable of accepting.<a href="#section-3.6.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.6.1-2">For PVD, the Accept header value is <code>application/pvd_json</code><a href="#section-3.6.1-2" class="pilcrow">¶</a></p>
+<p id="section-3.6.1-3">For existing WPAD clients, the most commonly used format is Netscape's
+Proxy Auto Config (PAC) file, the value is 'application/x-ns-proxy-autoconfig'<a href="#section-3.6.1-3" class="pilcrow">¶</a></p>
+<p id="section-3.6.1-4">Clients that support PVD can use content negotiation to prefer PVD,
+while accepting PAC as a fallback.<a href="#section-3.6.1-4" class="pilcrow">¶</a></p>
+<div class="alignLeft art-text artwork" id="section-3.6.1-5">
+<pre>
+:method = GET
+:authority = HOST
+:path = PATH
+accept = application/pvd+json
+accept = application/x-ns-proxy-autoconfig
+</pre><a href="#section-3.6.1-5" class="pilcrow">¶</a>
+</div>
+<p id="section-3.6.1-6">Clients that do not support PVD will continue to use PAC, and not include
+PVD in the accept header.<a href="#section-3.6.1-6" class="pilcrow">¶</a></p>
+<p id="section-3.6.1-7">When receiving a GET at the CURL, a proxy server can decide wether to return
+PVD or PAC, providing backward compatibility as well as an upgrade path.<a href="#section-3.6.1-7" class="pilcrow">¶</a></p>
+<p id="section-3.6.1-8">The client <span class="bcp14">MUST</span> follow HTTP redirect directives (response codes 3xx)
+returned by the server. The client <span class="bcp14">SHOULD</span> send a valid "User-Agent"
+header.<a href="#section-3.6.1-8" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="resuming-discovery">
+<section id="section-3.7">
+        <h3 id="name-resuming-discovery">
+<a href="#section-3.7" class="section-number selfRef">3.7. </a><a href="#name-resuming-discovery" class="section-name selfRef">Resuming Discovery</a>
+        </h3>
+<p id="section-3.7-1">If the HTTP request fails for any reason (fails to connect, server
+error response, etc) the client <span class="bcp14">MUST</span> resume the search for a
+successful CURL where it left off. It should continue attempting
+other sub-steps in a specific discovery mechanism, and then move on
+to the next mechanism or TGTDOM iteration, etc.<a href="#section-3.7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="client-implementation-considerations">
+<section id="section-4">
+      <h2 id="name-client-implementation-consi">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-client-implementation-consi" class="section-name selfRef">Client Implementation Considerations</a>
+      </h2>
+<p id="section-4-1">The large number of discovery mechanisms specified in this document
+may raise concerns about network traffic and performance. The DHCP
+portion of the process will result in a single broadcast by the
+client, and perhaps a few replies by listening DHCP servers.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<p id="section-4-2">The remaining mechanisms are all DNS based. All DNS queries should
+have the QNAME terminated with a trailing '.' to indicate a FQDN and
+expedite the lookup. As such each TGTDOM iteration will cause 3 DNS
+lookups, each a unicast UDP packet and a reply. Most clients will
+have fewer than 2TGTDOM iterations, limiting the total number of DNS
+request/replies to6.<a href="#section-4-2" class="pilcrow">¶</a></p>
+<p id="section-4-3">All total, 7 UDP request/reply packets on client startup is quite a
+low overhead.  The first web page downloaded by the client will
+likely dwarf that packet count. Each of the DNS lookups should stand
+a high chance of hitting the cache in the client's DNS server, since
+other clients will have likely looked them up recently, providing a
+low total elapsed time.<a href="#section-4-3" class="pilcrow">¶</a></p>
+<p id="section-4-4">This is of course the worst case, where no CURLS are obtained, and
+assuming a long client FQDN. Often, a successful CURL will be found
+early in the protocol, reducing the total packet count.
+Client implementations are encouraged to overlap this protocol work
+with other startup activities. Also, client implementers with
+concerns about performance can choose to implement only the
+discovery mechanisms listed as <span class="bcp14">MUST</span> in section 3.4.<a href="#section-4-4" class="pilcrow">¶</a></p>
+<p id="section-4-5">A longer delay could occur if a CURL is obtained, but the hosting
+web server is down. The client could spend considerable time waiting
+for the TCP “connect ()” call to fail. Luckily this is an extremely
+rare case where the web server hosting the CFILE has failed. See
+section 5, where proxy server implementers are encouraged to provide
+support for hosting CURLs on the proxy itself (acting as web
+server).  Since proxy servers are often deployed with considerable
+attention to fault tolerance, this corner case can be further
+minimized.<a href="#section-4-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="proxy-server-considerations">
+<section id="section-5">
+      <h2 id="name-proxy-server-considerations">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-proxy-server-considerations" class="section-name selfRef">Proxy Server Considerations</a>
+      </h2>
+<p id="section-5-1">As mentioned in the previous section, it is suggested that proxy
+servers be capable of acting as a web server, so that they can host
+the CURL directly.<a href="#section-5-1" class="pilcrow">¶</a></p>
+<p id="section-5-2">The implementers of proxy servers are most likely to understand the
+deployment situations of proxy caches, the formats of proxy
+configuration files, etc. They can also build in the ability select
+a CFILE based on all the various inputs at the time of the CURL
+request("User-Agent", "Accept", client IP address/subnet/hostname,
+topological distribution of nearby proxy servers, etc).<a href="#section-5-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="administrator-considerations">
+<section id="section-6">
+      <h2 id="name-administrator-consideration">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-administrator-consideration" class="section-name selfRef">Administrator Considerations</a>
+      </h2>
+<p id="section-6-1">Administrators should configure at least one of the DHCP or DNS A RR
+methods in their environment (since those are the only two all
+compatible clients <span class="bcp14">MUST</span> implement). Beyond that, configuring to
+support mechanisms earlier in the search order will improve client
+startup time.<a href="#section-6-1" class="pilcrow">¶</a></p>
+<p id="section-6-2">One of the major motivations for this protocol structure was to
+support client location of "nearby" proxy servers. In many
+environments there may be a number of proxy servers (workgroup,
+corporate gateway, ISP, backbone). There are a number of possible
+points at which "nearness" decisions can be made in this framework:<a href="#section-6-2" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-6-3.1">
+          <p id="section-6-3.1.1">DHCP servers for different subnets can return different answers.
+  They can also base decisions on the client cipaddr field or the
+  client identifier option.<a href="#section-6-3.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-3.2">
+          <p id="section-6-3.2.1">DNS servers can be configured to return different SRV/A/TXT RRs
+  for Different domain suffixes (for example, QNAMEs
+  wpad.marketing.bigcorp.com and wpad.development.bigcorp.com).<a href="#section-6-3.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-3.3">
+          <p id="section-6-3.3.1">The web server handling the CURL request can make decisions based
+  on the "User-Agent", "Accept", client IP
+  address/subnet/hostname, and the topological distribution of
+  nearby proxy servers, etc.  This can occur inside a CGI
+  executable created to handle the CURL.  As mentioned above it
+  could be a proxy server itself handing the CURL request and
+  making those decisions.<a href="#section-6-3.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-6-3.4">
+          <p id="section-6-3.4.1">The CFILE may be expressive enough to select from a set of
+  alternatives at "runtime" on the client. CARP REF6 is based on
+  this premise for an array of caches. It is not inconceivable
+  that the CFILE could compute some network distance or fitness
+  metrics to a set of candidate proxy servers and then select the
+  "closest" or "most responsive" server.<a href="#section-6-3.4.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+<p id="section-6-4">Note that it is valid to configure a DHCP daemon to respond only to
+INFORM option queries in static IP environments<a href="#section-6-4" class="pilcrow">¶</a></p>
+<p id="section-6-5">Not all of the above mechanisms can be supported in all currently
+deployed vendor hardware and software. The hope is that enough
+flexibility is provided in this framework that administrators can
+select which mechanisms will work in their environments.<a href="#section-6-5" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-7">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-7-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-7-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="security-considerations">
+<section id="section-8">
+      <h2 id="name-security-considerations">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<p id="section-8-1">This document does not address security of the protocols involved.
+The WPAD protocol is vulnerable to existing identified weaknesses in
+DHCP and DNS. The groups driving those standards, as well as the SLP
+protocol standards, are addressing security.<a href="#section-8-1" class="pilcrow">¶</a></p>
+<p id="section-8-2">When using DHCP discovery, clients are encouraged to use unicast
+DHCP INFORM queries instead of broadcast queries which are more
+easily spoofed in insecure networks.<a href="#section-8-2" class="pilcrow">¶</a></p>
+<p id="section-8-3">Minimally, it can be said that the WPAD protocol does not create new
+security weaknesses.<a href="#section-8-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="iana-considerations">
+<section id="section-9">
+      <h2 id="name-iana-considerations">
+<a href="#section-9" class="section-number selfRef">9. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-9-1">This document has no IANA actions.<a href="#section-9-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-normative-references">
+<section id="section-10">
+      <h2 id="name-normative-references">
+<a href="#section-10" class="section-number selfRef">10. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+      </h2>
+<dl class="references">
+<dt id="DHCP">[DHCP]</dt>
+      <dd>
+<span class="refAuthor">Droms, R.</span>, <span class="refTitle">"Dynamic Host Configuration Protocol"</span>, <span class="seriesInfo">RFC 2131</span>, <span class="seriesInfo">DOI 10.17487/RFC2131</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2131">https://www.rfc-editor.org/rfc/rfc2131</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="DNSSD">[DNSSD]</dt>
+      <dd>
+<span class="refAuthor">Cheshire, S.</span> and <span class="refAuthor">M. Krochmal</span>, <span class="refTitle">"DNS-Based Service Discovery"</span>, <span class="seriesInfo">RFC 6763</span>, <span class="seriesInfo">DOI 10.17487/RFC6763</span>, <time datetime="2013-02" class="refDate">February 2013</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc6763">https://www.rfc-editor.org/rfc/rfc6763</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="DNSSRV">[DNSSRV]</dt>
+      <dd>
+<span class="refAuthor">Gulbrandsen, A.</span>, <span class="refAuthor">Vixie, P.</span>, and <span class="refAuthor">L. Esibov</span>, <span class="refTitle">"A DNS RR for specifying the location of services (DNS SRV)"</span>, <span class="seriesInfo">RFC 2782</span>, <span class="seriesInfo">DOI 10.17487/RFC2782</span>, <time datetime="2000-02" class="refDate">February 2000</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2782">https://www.rfc-editor.org/rfc/rfc2782</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC2119">[RFC2119]</dt>
+      <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+      <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="WPAD">[WPAD]</dt>
+    <dd>
+<span class="refAuthor">Perkins, C. E.</span>, <span class="refAuthor">Cohen, J.</span>, <span class="refAuthor">Dunsmuir, M.</span>, <span class="refAuthor">Gauthier, P. A.</span>, <span class="refAuthor">Cooper, I.</span>, and <span class="refAuthor">J. W. C. M.A.</span>, <span class="refTitle">"Web Proxy Auto-Discovery Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wrec-wpad-01</span>, <time datetime="1999-07-29" class="refDate">29 July 1999</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wrec-wpad-01">https://datatracker.ietf.org/doc/html/draft-ietf-wrec-wpad-01</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-A">
+      <h2 id="name-acknowledgments">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<div id="acknowledgements-for-current-versions">
+<section id="appendix-A.1">
+        <h3 id="name-acknowledgements-for-curren">
+<a href="#appendix-A.1" class="section-number selfRef">A.1. </a><a href="#name-acknowledgements-for-curren" class="section-name selfRef">Acknowledgements for current versions</a>
+        </h3>
+<p id="appendix-A.1-1">The editor(s) of this specification would like acknowledge the contributions
+of the previous authors.<a href="#appendix-A.1-1" class="pilcrow">¶</a></p>
+<p id="appendix-A.1-2">Paul Gauthier
+   Inktomi Corporation<a href="#appendix-A.1-2" class="pilcrow">¶</a></p>
+<p id="appendix-A.1-3">Martin Dunsmuir
+   RealNetworks, Inc.<a href="#appendix-A.1-3" class="pilcrow">¶</a></p>
+<p id="appendix-A.1-4">Charles Perkins
+   Sun Microsystems, Inc.<a href="#appendix-A.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="acknowledgements-from-previous-versions">
+<section id="appendix-A.2">
+        <h3 id="name-acknowledgements-from-previ">
+<a href="#appendix-A.2" class="section-number selfRef">A.2. </a><a href="#name-acknowledgements-from-previ" class="section-name selfRef">Acknowledgements from previous versions</a>
+        </h3>
+<p id="appendix-A.2-1">The authors' work on this specification would be incomplete without
+the assistance of many people.  Specifically, the authors would like
+the express their gratitude to the following people:<a href="#appendix-A.2-1" class="pilcrow">¶</a></p>
+<p id="appendix-A.2-2">Chuck Neerdaels, Inktomi, for providing assistance in the design of
+the WPAD protocol as well as for providing reference
+implementations.<a href="#appendix-A.2-2" class="pilcrow">¶</a></p>
+<p id="appendix-A.2-3">Arthur Bierer, Darren Mitchell, Sean Edmison, Mario Rodriguez, Danpo
+Zhang, and Yaron Goland, Microsoft, for providing implementation
+insights as well as testing and deployment.<a href="#appendix-A.2-3" class="pilcrow">¶</a></p>
+<p id="appendix-A.2-4">Ari Luotonen, Netscape, for his role in designing the first web
+proxy.<a href="#appendix-A.2-4" class="pilcrow">¶</a></p>
+<p id="appendix-A.2-5">In addition, the authors are grateful for the feedback provided by
+the following people:<a href="#appendix-A.2-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="appendix-A.2-6.1">
+            <p id="appendix-A.2-6.1.1">Jeremy Worley - RealNetworks<a href="#appendix-A.2-6.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="appendix-A.2-6.2">
+            <p id="appendix-A.2-6.2.1">Eric Twitchell - United Parcel Service<a href="#appendix-A.2-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="appendix-A.2-7">end of draft<a href="#appendix-A.2-7" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-B">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Josh Cohen</span></div>
+<div dir="auto" class="left"><span class="org">Self</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:joshco@gmail.com" class="email">joshco@gmail.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
