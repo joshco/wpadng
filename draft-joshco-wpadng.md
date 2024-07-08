@@ -68,7 +68,7 @@ This specification defines the following URN for use with WPADNG.
 
 `urn:wpadng:none`
 
-When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client SHOULD stop any further discovery.  This can be helpful in avoiding unnecessary network round trips, preventing clients discovering rogue proxy servers.
+When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client SHOULD stop any further discovery.  This can be helpful in avoiding unnecessary network round trips and  preventing discovery of rogue proxy servers.
 
 # The Discovery Process
 
@@ -83,6 +83,7 @@ WPADNG uses a collection of pre-existing Internet resource discovery mechanisms 
     compliant web client
 
 The resource discovery mechanisms utilized by WPADNG, in order, are as follows.
+
 - Dynamic Host Configuration Protocol v4 or v6 depending on network.
 - DNS-SD
 
