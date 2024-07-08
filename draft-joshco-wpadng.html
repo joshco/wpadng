@@ -1251,7 +1251,7 @@ order, until one succeeds.<a href="#section-1-5" class="pilcrow">¶</a></p>
 <p id="section-2-1">When a CURL is returned by discovery, it <span class="bcp14">SHOULD</span> be either a URL which is retrievable or a URN.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <p id="section-2-2">This specification defines the following URN for use with WPADNG.<a href="#section-2-2" class="pilcrow">¶</a></p>
 <p id="section-2-3"><code>urn:wpadng:none</code><a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client <span class="bcp14">SHOULD</span> stop any further discovery.  This can be helpful in avoiding unnecessary network round trips, preventing clients discovering rogue proxy servers.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<p id="section-2-4">When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client <span class="bcp14">SHOULD</span> stop any further discovery.  This can be helpful in avoiding unnecessary network round trips and  preventing discovery of rogue proxy servers.<a href="#section-2-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="the-discovery-process">
@@ -1278,29 +1278,35 @@ order, until one succeeds.<a href="#section-1-5" class="pilcrow">¶</a></p>
   compliant web client<a href="#section-3.1-2.3.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
-<p id="section-3.1-3">The resource discovery mechanisms utilized by WPADNG, in order, are as follows.
-- Dynamic Host Configuration Protocol v4 or v6 depending on network.
-- DNS-SD<a href="#section-3.1-3" class="pilcrow">¶</a></p>
-<p id="section-3.1-4">Clients only attempt mechanisms that they support. Each
+<p id="section-3.1-3">The resource discovery mechanisms utilized by WPADNG, in order, are as follows.<a href="#section-3.1-3" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-3.1-4.1">
+            <p id="section-3.1-4.1.1">Dynamic Host Configuration Protocol v4 or v6 depending on network.<a href="#section-3.1-4.1.1" class="pilcrow">¶</a></p>
+</li>
+          <li class="normal" id="section-3.1-4.2">
+            <p id="section-3.1-4.2.1">DNS-SD<a href="#section-3.1-4.2.1" class="pilcrow">¶</a></p>
+</li>
+        </ul>
+<p id="section-3.1-5">Clients only attempt mechanisms that they support. Each
 time the discovery attempt succeeds; the client uses the information
-obtained to construct a CURL. If the CURL is the URN <code>urn:wpadng:none</code> or if a CFILE is successfully retrieved, the process is complete.<a href="#section-3.1-4" class="pilcrow">¶</a></p>
-<p id="section-3.1-5">If not, the client resumes where it left of in the predefined series of resource discovery requests. If no untried mechanisms remain and a CFILE has not been successfully retrieved, the WPADNG protocol fails and the client is configured to use no proxy server.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
-<p id="section-3.1-6">First the client tries DHCP, followed by DNSSD. If no CFILE has been
+obtained to construct a CURL. If the CURL is the URN <code>urn:wpadng:none</code> or if a CFILE is successfully retrieved, the process is complete.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
+<p id="section-3.1-6">If not, the client resumes where it left of in the predefined series of resource discovery requests. If no untried mechanisms remain and a CFILE has not been successfully retrieved, the WPADNG protocol fails and the client is configured to use no proxy server.<a href="#section-3.1-6" class="pilcrow">¶</a></p>
+<p id="section-3.1-7">First the client tries DHCP, followed by DNSSD. If no CFILE has been
 retrieved the client will retry the DNSSD mechanism multiple times. Each time through the QNAME being
 used in the DNSSD query is made less and less specific. In this manner
 the client can locate the most specific configuration information
 possible, but can fall back on less specific information. Every DNSSD
-lookup has the QNAME prefixed with “_wpadng._tcp” to indicate the resource type being requested.<a href="#section-3.1-6" class="pilcrow">¶</a></p>
-<p id="section-3.1-7">As an example, consider a client with hostname johns-
+lookup has the QNAME prefixed with “_wpadng._tcp” to indicate the resource type being requested.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
+<p id="section-3.1-8">As an example, consider a client with hostname johns-
 desktop.development.example.com. Assume the web client software supports all of the mechanisms listed above. This is the sequence of
 discovery attempts the client would perform until one succeeded in
-locating a valid CFILE:<a href="#section-3.1-7" class="pilcrow">¶</a></p>
+locating a valid CFILE:<a href="#section-3.1-8" class="pilcrow">¶</a></p>
 <ul class="normal">
-<li class="normal" id="section-3.1-8.1">
-            <p id="section-3.1-8.1.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.development.example.com.<a href="#section-3.1-8.1.1" class="pilcrow">¶</a></p>
+<li class="normal" id="section-3.1-9.1">
+            <p id="section-3.1-9.1.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.development.example.com.<a href="#section-3.1-9.1.1" class="pilcrow">¶</a></p>
 </li>
-          <li class="normal" id="section-3.1-8.2">
-            <p id="section-3.1-8.2.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.example.com.<a href="#section-3.1-8.2.1" class="pilcrow">¶</a></p>
+          <li class="normal" id="section-3.1-9.2">
+            <p id="section-3.1-9.2.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.example.com.<a href="#section-3.1-9.2.1" class="pilcrow">¶</a></p>
 </li>
         </ul>
 </section>
