@@ -234,7 +234,7 @@ txtvers=1
 url=CURL
 ~~~
 
-The CURL value is the URL to retrieve a Proxy Configuration FIle.
+The CURL value is a URN or the URL to retrieve a Proxy Configuration File.
 
 
 #### DNSSD Client behavior
