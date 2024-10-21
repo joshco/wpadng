@@ -1026,11 +1026,11 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <thead><tr>
 <td class="left">Internet-Draft</td>
 <td class="center">wpadng</td>
-<td class="right">July 2024</td>
+<td class="right">October 2024</td>
 </tr></thead>
 <tfoot><tr>
 <td class="left">Cohen</td>
-<td class="center">Expires 9 January 2025</td>
+<td class="center">Expires 24 April 2025</td>
 <td class="right">[Page]</td>
 </tr></tfoot>
 </table>
@@ -1043,12 +1043,12 @@ svg :is([fill="white"], [fill^="#fff"]) {
 <dd class="internet-draft">draft-joshco-wpadng-latest</dd>
 <dt class="label-published">Published:</dt>
 <dd class="published">
-<time datetime="2024-07-08" class="published">8 July 2024</time>
+<time datetime="2024-10-21" class="published">21 October 2024</time>
     </dd>
 <dt class="label-intended-status">Intended Status:</dt>
 <dd class="intended-status">Informational</dd>
 <dt class="label-expires">Expires:</dt>
-<dd class="expires"><time datetime="2025-01-09">9 January 2025</time></dd>
+<dd class="expires"><time datetime="2025-04-24">24 April 2025</time></dd>
 <dt class="label-authors">Author:</dt>
 <dd class="authors">
 <div class="author">
@@ -1091,7 +1091,7 @@ earlier in its evolution. This specification provides more modern discovery mech
         time. It is inappropriate to use Internet-Drafts as reference
         material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
 <p id="section-boilerplate.1-4">
-        This Internet-Draft will expire on 9 January 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+        This Internet-Draft will expire on 24 April 2025.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="copyright">
@@ -1121,13 +1121,21 @@ earlier in its evolution. This specification provides more modern discovery mech
             <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
-            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-curls-and-urns" class="internal xref">CURLs and URNs</a></p>
+            <p id="section-toc.1-1.2.1"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-curls-and-urns" class="internal xref">CURLs and URNs</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-no-proxy" class="internal xref">No Proxy</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.2">
+                <p id="section-toc.1-1.2.2.2.1" class="keepWithNext"><a href="#section-2.2" class="auto internal xref">2.2</a>.  <a href="#name-domain-redirect" class="internal xref">Domain Redirect</a></p>
+</li>
+            </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
             <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-the-discovery-process" class="internal xref">The Discovery Process</a></p>
 <ul class="compact toc ulBare ulEmpty">
 <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
-                <p id="section-toc.1-1.3.2.1.1" class="keepWithNext"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-wpadng-overview" class="internal xref">WPADNG Overview</a></p>
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-wpadng-overview" class="internal xref">WPADNG Overview</a></p>
 </li>
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.2">
                 <p id="section-toc.1-1.3.2.2.1"><a href="#section-3.2" class="auto internal xref">3.2</a>.  <a href="#name-when-to-execute-wpadng" class="internal xref">When to Execute WPADNG</a></p>
@@ -1250,8 +1258,27 @@ order, until one succeeds.<a href="#section-1-5" class="pilcrow">¶</a></p>
       </h2>
 <p id="section-2-1">When a CURL is returned by discovery, it <span class="bcp14">SHOULD</span> be either a URL which is retrievable or a URN.<a href="#section-2-1" class="pilcrow">¶</a></p>
 <p id="section-2-2">This specification defines the following URN for use with WPADNG.<a href="#section-2-2" class="pilcrow">¶</a></p>
-<p id="section-2-3"><code>urn:wpadng:none</code><a href="#section-2-3" class="pilcrow">¶</a></p>
-<p id="section-2-4">When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client <span class="bcp14">SHOULD</span> stop any further discovery.  This can be helpful in avoiding unnecessary network round trips and  preventing discovery of rogue proxy servers.<a href="#section-2-4" class="pilcrow">¶</a></p>
+<div id="no-proxy">
+<section id="section-2.1">
+        <h3 id="name-no-proxy">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-no-proxy" class="section-name selfRef">No Proxy</a>
+        </h3>
+<p id="section-2.1-1"><code>urn:wpadng:none</code><a href="#section-2.1-1" class="pilcrow">¶</a></p>
+<p id="section-2.1-2">When this URN is returned as the CURL, the meaning is that the current network has no proxy server, and the client <span class="bcp14">SHOULD</span> stop any further discovery.  This can be helpful in avoiding unnecessary network round trips and  preventing discovery of rogue proxy servers.<a href="#section-2.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="domain-redirect">
+<section id="section-2.2">
+        <h3 id="name-domain-redirect">
+<a href="#section-2.2" class="section-number selfRef">2.2. </a><a href="#name-domain-redirect" class="section-name selfRef">Domain Redirect</a>
+        </h3>
+<p id="section-2.2-1">This document removes DNS Devolution, where the client tries DNSSD discovery repeatedly moving up the DNS hierachy by removing subdomains.<a href="#section-2.2-1" class="pilcrow">¶</a></p>
+<p id="section-2.2-2">Instead, this document specifies a URN that allows redirection to another DNS domain, which is specified in the URN's r-component.<a href="#section-2.2-2" class="pilcrow">¶</a></p>
+<p id="section-2.2-3"><code>urn:wpadng:domain?+&lt;ANOTHER_DOMAIN&gt;</code><a href="#section-2.2-3" class="pilcrow">¶</a></p>
+<p id="section-2.2-4">For example, if the client's domain is <code>development.example.com</code> and the enterprise specifies it's CURL at <code>example.com</code>, the returned URN would be:<a href="#section-2.2-4" class="pilcrow">¶</a></p>
+<p id="section-2.2-5"><code>urn:wpadng:domain?+example.com</code><a href="#section-2.2-5" class="pilcrow">¶</a></p>
+</section>
+</div>
 </section>
 </div>
 <div id="the-discovery-process">
@@ -1291,24 +1318,9 @@ order, until one succeeds.<a href="#section-1-5" class="pilcrow">¶</a></p>
 time the discovery attempt succeeds; the client uses the information
 obtained to construct a CURL. If the CURL is the URN <code>urn:wpadng:none</code> or if a CFILE is successfully retrieved, the process is complete.<a href="#section-3.1-5" class="pilcrow">¶</a></p>
 <p id="section-3.1-6">If not, the client resumes where it left of in the predefined series of resource discovery requests. If no untried mechanisms remain and a CFILE has not been successfully retrieved, the WPADNG protocol fails and the client is configured to use no proxy server.<a href="#section-3.1-6" class="pilcrow">¶</a></p>
-<p id="section-3.1-7">First the client tries DHCP, followed by DNSSD. If no CFILE has been
-retrieved the client will retry the DNSSD mechanism multiple times. Each time through the QNAME being
-used in the DNSSD query is made less and less specific. In this manner
-the client can locate the most specific configuration information
-possible, but can fall back on less specific information. Every DNSSD
-lookup has the QNAME prefixed with “_wpadng._tcp” to indicate the resource type being requested.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
-<p id="section-3.1-8">As an example, consider a client with hostname johns-
-desktop.development.example.com. Assume the web client software supports all of the mechanisms listed above. This is the sequence of
-discovery attempts the client would perform until one succeeded in
-locating a valid CFILE:<a href="#section-3.1-8" class="pilcrow">¶</a></p>
-<ul class="normal">
-<li class="normal" id="section-3.1-9.1">
-            <p id="section-3.1-9.1.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.development.example.com.<a href="#section-3.1-9.1.1" class="pilcrow">¶</a></p>
-</li>
-          <li class="normal" id="section-3.1-9.2">
-            <p id="section-3.1-9.2.1">DNSSD PTR lookup on QNAME=_wpadng._tcp.example.com.<a href="#section-3.1-9.2.1" class="pilcrow">¶</a></p>
-</li>
-        </ul>
+<p id="section-3.1-7">First the client tries DHCP, followed by DNSSD.<a href="#section-3.1-7" class="pilcrow">¶</a></p>
+<p id="section-3.1-8">When performing DNSSD discovery, the client might receive a CURL, the URN for No Proxy, the URN for Domain Redirect, or no CURL.<a href="#section-3.1-8" class="pilcrow">¶</a></p>
+<p id="section-3.1-9">If the client receives the Domain Redirect URN, then it should retry DNSSD discovery on the domain specified in the URN r-component.<a href="#section-3.1-9" class="pilcrow">¶</a></p>
 </section>
 </div>
 <div id="when-to-execute-wpadng">
@@ -1709,7 +1721,7 @@ security weaknesses.<a href="#section-6-3" class="pilcrow">¶</a></p>
 <dd class="break"></dd>
 <dt id="PVD">[PVD]</dt>
       <dd>
-<span class="refAuthor">Perkins, C. E.</span>, <span class="refAuthor">Cohen, J.</span>, <span class="refAuthor">Dunsmuir, M.</span>, <span class="refAuthor">Gauthier, P. A.</span>, <span class="refAuthor">Cooper, I.</span>, and <span class="refAuthor">J. W. C. M.A.</span>, <span class="refTitle">"Web Proxy Auto-Discovery Protocol"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-ietf-wrec-wpad-01</span>, <time datetime="1999-07-29" class="refDate">29 July 1999</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-ietf-wrec-wpad-01">https://datatracker.ietf.org/doc/html/draft-ietf-wrec-wpad-01</a>&gt;</span>. </dd>
+<span class="refAuthor">Pauly, T.</span> and <span class="refAuthor">D. Damjanovic</span>, <span class="refTitle">"Communicating Proxy Configurations in Provisioning Domains"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-pauly-intarea-proxy-config-pvd-02</span>, <time datetime="2024-03-01" class="refDate">1 March 2024</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-pauly-intarea-proxy-config-pvd-02">https://datatracker.ietf.org/doc/html/draft-pauly-intarea-proxy-config-pvd-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC2119">[RFC2119]</dt>
       <dd>

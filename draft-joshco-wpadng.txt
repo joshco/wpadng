@@ -4,8 +4,8 @@
 
 Network Working Group                                           J. Cohen
 Internet-Draft                                                      Self
-Intended status: Informational                               8 July 2024
-Expires: 9 January 2025
+Intended status: Informational                           21 October 2024
+Expires: 24 April 2025
 
 
                 Web Proxy Auto Discovery Next Generation
@@ -40,7 +40,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 9 January 2025.
+   This Internet-Draft will expire on 24 April 2025.
 
 Copyright Notice
 
@@ -57,6 +57,8 @@ Table of Contents
 
    1.  Introduction
    2.  CURLs and URNs
+     2.1.  No Proxy
+     2.2.  Domain Redirect
    3.  The Discovery Process
      3.1.  WPADNG Overview
      3.2.  When to Execute WPADNG
@@ -122,12 +124,31 @@ Table of Contents
 
    This specification defines the following URN for use with WPADNG.
 
+2.1.  No Proxy
+
    urn:wpadng:none
 
    When this URN is returned as the CURL, the meaning is that the
    current network has no proxy server, and the client SHOULD stop any
    further discovery.  This can be helpful in avoiding unnecessary
    network round trips and preventing discovery of rogue proxy servers.
+
+2.2.  Domain Redirect
+
+   This document removes DNS Devolution, where the client tries DNSSD
+   discovery repeatedly moving up the DNS hierachy by removing
+   subdomains.
+
+   Instead, this document specifies a URN that allows redirection to
+   another DNS domain, which is specified in the URN's r-component.
+
+   urn:wpadng:domain?+<ANOTHER_DOMAIN>
+
+   For example, if the client's domain is development.example.com and
+   the enterprise specifies it's CURL at example.com, the returned URN
+   would be:
+
+   urn:wpadng:domain?+example.com
 
 3.  The Discovery Process
 
@@ -162,24 +183,13 @@ Table of Contents
    a CFILE has not been successfully retrieved, the WPADNG protocol
    fails and the client is configured to use no proxy server.
 
-   First the client tries DHCP, followed by DNSSD.  If no CFILE has been
-   retrieved the client will retry the DNSSD mechanism multiple times.
-   Each time through the QNAME being used in the DNSSD query is made
-   less and less specific.  In this manner the client can locate the
-   most specific configuration information possible, but can fall back
-   on less specific information.  Every DNSSD lookup has the QNAME
-   prefixed with “_wpadng._tcp” to indicate the resource type being
-   requested.
+   First the client tries DHCP, followed by DNSSD.
 
-   As an example, consider a client with hostname johns-
-   desktop.development.example.com.  Assume the web client software
-   supports all of the mechanisms listed above.  This is the sequence of
-   discovery attempts the client would perform until one succeeded in
-   locating a valid CFILE:
+   When performing DNSSD discovery, the client might receive a CURL, the
+   URN for No Proxy, the URN for Domain Redirect, or no CURL.
 
-   *  DNSSD PTR lookup on QNAME=_wpadng._tcp.development.example.com.
-
-   *  DNSSD PTR lookup on QNAME=_wpadng._tcp.example.com.
+   If the client receives the Domain Redirect URN, then it should retry
+   DNSSD discovery on the domain specified in the URN r-component.
 
 3.2.  When to Execute WPADNG
 
@@ -470,12 +480,11 @@ Table of Contents
               Discovery", RFC 6763, DOI 10.17487/RFC6763, February 2013,
               <https://www.rfc-editor.org/rfc/rfc6763>.
 
-   [PVD]      Perkins, C. E., Cohen, J., Dunsmuir, M., Gauthier, P. A.,
-              Cooper, I., and J. W. C. M.A., "Web Proxy Auto-Discovery
-              Protocol", Work in Progress, Internet-Draft, draft-ietf-
-              wrec-wpad-01, 29 July 1999,
-              <https://datatracker.ietf.org/doc/html/draft-ietf-wrec-
-              wpad-01>.
+   [PVD]      Pauly, T. and D. Damjanovic, "Communicating Proxy
+              Configurations in Provisioning Domains", Work in Progress,
+              Internet-Draft, draft-pauly-intarea-proxy-config-pvd-02, 1
+              March 2024, <https://datatracker.ietf.org/doc/html/draft-
+              pauly-intarea-proxy-config-pvd-02>.
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,

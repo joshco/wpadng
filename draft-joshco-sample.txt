@@ -4,8 +4,8 @@
 
 intarea                                                         J. Cohen
 Internet-Draft                                                      Self
-Intended status: Informational                              4 March 2024
-Expires: 5 September 2024
+Intended status: Informational                           21 October 2024
+Expires: 24 April 2025
 
 
                                  Sample
@@ -111,7 +111,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 5 September 2024.
+   This Internet-Draft will expire on 24 April 2025.
 
 Copyright Notice
 
